@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Careit - Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .section-content {
+            padding: 20px;
+        }
+
+        .endpoint-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .endpoint-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .endpoint-item label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .endpoint-item input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-list {
+            background: #4CAF50;
+        }
+
+        .btn-list:hover {
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .response-area {
+            margin-top: 20px;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .response-header h3 {
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-error {
+            background: #f44336;
+            color: white;
+        }
+
+        .status-loading {
+            background: #ff9800;
+            color: white;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .view-toggle button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .view-toggle button.active {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 5px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+        }
+
+        #response,
+        #tableResponse {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #tableResponse {
+            display: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        thead {
+            background: #667eea;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        tbody tr:hover {
+            background: #f1f5ff;
+        }
+
+        .health-check {
+            text-align: center;
+            padding: 20px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .health-status {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .health-ok {
+            color: #4CAF50;
+        }
+
+        .health-error {
+            color: #f44336;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Backend Careit</h1>
+            <p>Test Interface untuk API Backend</p>
+        </div>
+
+        <div class="content">
+            <!-- Health Check -->
+            <div class="health-check">
+                <h2>Health Check</h2>
+                <button onclick="checkHealth()" style="margin-top: 10px;">Cek Status Server</button>
+                <div id="healthStatus" class="health-status"></div>
+            </div>
+
+            <!-- Tarif BPJS Rawat Inap -->
+            <div class="section">
+                <div class="section-header">📋 Tarif BPJS Rawat Inap</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getTarifBPJSRawatInap()">List Semua Tarif</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Kode INA CBG:</label>
+                            <input type="text" id="kodeRawatInap" placeholder="Masukkan kode...">
+                            <button onclick="getTarifBPJSRawatInapByKode()">Cari by Kode</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarif BPJS Rawat Jalan -->
+            <div class="section">
+                <div class="section-header">🚶 Tarif BPJS Rawat Jalan</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getTarifBPJSRawatJalan()">List Semua Tarif</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Kode INA CBG:</label>
+                            <input type="text" id="kodeRawatJalan" placeholder="Masukkan kode...">
+                            <button onclick="getTarifBPJSRawatJalanByKode()">Cari by Kode</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarif RS -->
+            <div class="section">
+                <div class="section-header">🏨 Tarif RS</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getTarifRS()">List Semua Tarif</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Kode RS:</label>
+                            <input type="text" id="kodeRS" placeholder="Masukkan kode...">
+                            <button onclick="getTarifRSByKode()">Cari by Kode</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Kategori:</label>
+                            <input type="text" id="kategoriRS" placeholder="Masukkan kategori...">
+                            <button onclick="getTarifRSByKategori()">Cari by Kategori</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ICD9 -->
+            <div class="section">
+                <div class="section-header">🧬 Kode Tindakan ICD9</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getICD9()">List Semua Kode ICD9</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Filter (client side, berdasarkan teks):</label>
+                            <input type="text" id="filterICD9" placeholder="Ketik untuk filter di tabel..." oninput="filterICD9ClientSide()">
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                        Data diambil dari endpoint <code>/icd9</code>. Tabel di bawah akan otomatis menyesuaikan kolom dari field JSON (misal: kode, deskripsi, dll).
+                    </p>
+                </div>
+            </div>
+
+            <!-- ICD10 -->
+            <div class="section">
+                <div class="section-header">🩺 Kode Diagnosis ICD10</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getICD10()">List Semua Kode ICD10</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Filter (client side, berdasarkan teks):</label>
+                            <input type="text" id="filterICD10" placeholder="Ketik untuk filter di tabel..." oninput="filterICD10ClientSide()">
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                        Data diambil dari endpoint <code>/icd10</code>. Tabel di bawah akan otomatis menyesuaikan kolom dari field JSON.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Dokter -->
+            <div class="section">
+                <div class="section-header">👨‍⚕️ Data Dokter</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getDokter()">List Semua Dokter</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Filter (client side, berdasarkan teks):</label>
+                            <input type="text" id="filterDokter" placeholder="Ketik untuk filter di tabel..." oninput="filterDokterClientSide()">
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                        Data diambil dari endpoint <code>/dokter</code>. Tabel di bawah akan otomatis menyesuaikan kolom dari field JSON.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Ruangan -->
+            <div class="section">
+                <div class="section-header">🏥 Data Ruangan</div>
+                <div class="section-content">
+                    <div class="endpoint-group">
+                        <div class="endpoint-item">
+                            <button class="btn-list" onclick="getRuangan()">List Semua Ruangan</button>
+                        </div>
+                        <div class="endpoint-item">
+                            <label>Filter (client side, berdasarkan teks):</label>
+                            <input type="text" id="filterRuangan" placeholder="Ketik untuk filter di tabel..." oninput="filterRuanganClientSide()">
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                        Data diambil dari endpoint <code>/ruangan</code>. Tabel di bawah akan otomatis menyesuaikan kolom dari field JSON.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Response Area -->
+            <div class="response-area">
+                <div class="response-header">
+                    <h3>Response:</h3>
+                    <span id="statusBadge" class="status-badge" style="display: none;"></span>
+                </div>
+                <div class="view-toggle">
+                    <button id="btnJsonView" class="active" onclick="setViewMode('json')">JSON</button>
+                    <button id="btnTableView" onclick="setViewMode('table')">Table (Auto)</button>
+                </div>
+                <div id="response"></div>
+                <div id="tableResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8081';
+
+        function showResponse(data, status = 'ok') {
+            const responseDiv = document.getElementById('response');
+            const tableDiv = document.getElementById('tableResponse');
+            const statusBadge = document.getElementById('statusBadge');
+            
+            // Tampilkan JSON mentah
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+
+            // Coba render tabel
+            renderTable(data);
+            
+            statusBadge.style.display = 'inline-block';
+            statusBadge.className = 'status-badge status-' + status;
+            statusBadge.textContent = status === 'ok' ? '✓ Success' : status === 'loading' ? '⏳ Loading...' : '✗ Error';
+        }
+
+        function setViewMode(mode) {
+            const responseDiv = document.getElementById('response');
+            const tableDiv = document.getElementById('tableResponse');
+            const btnJson = document.getElementById('btnJsonView');
+            const btnTable = document.getElementById('btnTableView');
+
+            if (mode === 'json') {
+                responseDiv.style.display = 'block';
+                tableDiv.style.display = 'none';
+                btnJson.classList.add('active');
+                btnTable.classList.remove('active');
+            } else {
+                responseDiv.style.display = 'none';
+                tableDiv.style.display = 'block';
+                btnJson.classList.remove('active');
+                btnTable.classList.add('active');
+            }
+        }
+
+        function formatRupiah(value) {
+            if (value === null || value === undefined || value === '') {
+                return '';
+            }
+            // Convert to number
+            const num = typeof value === 'string' ? parseFloat(value) : value;
+            if (isNaN(num)) {
+                return value;
+            }
+            // Format dengan pemisah ribuan
+            return 'Rp ' + num.toLocaleString('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function isTarifColumn(key) {
+            const lowerKey = key.toLowerCase();
+            return lowerKey.includes('tarif') || 
+                   lowerKey.includes('harga') || 
+                   lowerKey.includes('kelas') ||
+                   lowerKey.includes('tarif_inacbg');
+        }
+
+        function renderTable(data) {
+            const tableDiv = document.getElementById('tableResponse');
+
+            // Reset isi
+            tableDiv.innerHTML = '';
+
+            // Hanya render tabel untuk array of objects
+            if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
+                setViewMode('json');
+                return;
+            }
+
+            const keys = Array.from(
+                data.reduce((set, item) => {
+                    Object.keys(item || {}).forEach(k => set.add(k));
+                    return set;
+                }, new Set())
+            );
+
+            if (keys.length === 0) {
+                setViewMode('json');
+                return;
+            }
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+
+            const headerRow = document.createElement('tr');
+            keys.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                keys.forEach(key => {
+                    const td = document.createElement('td');
+                    const value = row && key in row ? row[key] : '';
+                    
+                    // Format tarif dengan rupiah
+                    if (isTarifColumn(key) && (typeof value === 'number' || (typeof value === 'string' && !isNaN(value) && value !== ''))) {
+                        td.textContent = formatRupiah(value);
+                        td.style.textAlign = 'right';
+                    } else {
+                        td.textContent = typeof value === 'object' ? JSON.stringify(value) : value;
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            tableDiv.appendChild(table);
+
+            // Auto switch ke view tabel
+            setViewMode('table');
+        }
+
+        async function checkHealth() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/`);
+                const data = await response.json();
+                
+                const healthStatus = document.getElementById('healthStatus');
+                if (response.ok) {
+                    healthStatus.textContent = '✓ Server Online';
+                    healthStatus.className = 'health-status health-ok';
+                } else {
+                    healthStatus.textContent = '✗ Server Error';
+                    healthStatus.className = 'health-status health-error';
+                }
+                
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                const healthStatus = document.getElementById('healthStatus');
+                healthStatus.textContent = '✗ Connection Error';
+                healthStatus.className = 'health-status health-error';
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifBPJSRawatInap() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifBPJSRawatInap`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifBPJSRawatInapByKode() {
+            const kode = document.getElementById('kodeRawatInap').value;
+            if (!kode) {
+                alert('Silakan masukkan kode!');
+                return;
+            }
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifBPJS/${encodeURIComponent(kode)}`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifBPJSRawatJalan() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifBPJSRawatJalan`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifBPJSRawatJalanByKode() {
+            const kode = document.getElementById('kodeRawatJalan').value;
+            if (!kode) {
+                alert('Silakan masukkan kode!');
+                return;
+            }
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifBPJSRawatJalan/${encodeURIComponent(kode)}`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifRS() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifRS`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifRSByKode() {
+            const kode = document.getElementById('kodeRS').value;
+            if (!kode) {
+                alert('Silakan masukkan kode!');
+                return;
+            }
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifRS/${encodeURIComponent(kode)}`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getTarifRSByKategori() {
+            const kategori = document.getElementById('kategoriRS').value;
+            if (!kategori) {
+                alert('Silakan masukkan kategori!');
+                return;
+            }
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/tarifRSByKategori/${encodeURIComponent(kategori)}`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        async function getICD9() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/icd9`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        function filterICD9ClientSide() {
+            const input = document.getElementById('filterICD9');
+            const filter = input.value.toLowerCase();
+            const tableDiv = document.getElementById('tableResponse');
+            const table = tableDiv.querySelector('table');
+            if (!table) {
+                return;
+            }
+
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        async function getICD10() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/icd10`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        function filterICD10ClientSide() {
+            const input = document.getElementById('filterICD10');
+            const filter = input.value.toLowerCase();
+            const tableDiv = document.getElementById('tableResponse');
+            const table = tableDiv.querySelector('table');
+            if (!table) {
+                return;
+            }
+
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        async function getDokter() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/dokter`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        function filterDokterClientSide() {
+            const input = document.getElementById('filterDokter');
+            const filter = input.value.toLowerCase();
+            const tableDiv = document.getElementById('tableResponse');
+            const table = tableDiv.querySelector('table');
+            if (!table) {
+                return;
+            }
+
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        async function getRuangan() {
+            try {
+                showResponse('Loading...', 'loading');
+                const response = await fetch(`${API_BASE}/ruangan`);
+                const data = await response.json();
+                showResponse(data, response.ok ? 'ok' : 'error');
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        function filterRuanganClientSide() {
+            const input = document.getElementById('filterRuangan');
+            const filter = input.value.toLowerCase();
+            const tableDiv = document.getElementById('tableResponse');
+            const table = tableDiv.querySelector('table');
+            if (!table) {
+                return;
+            }
+
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        }
+
+        // Auto check health on load
+        window.onload = function() {
+            checkHealth();
+        };
+    </script>
+</body>
+</html>
+

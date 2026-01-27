@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Billing INACBG</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row h-100">
+        <!-- Sidebar -->
+        <div class="col-md-3 sidebar">
+            <div class="sidebar-header">
+                <h5>Ruangan</h5>
+            </div>
+            <div class="ruangan-list" id="ruanganList">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>Data Billing Pasien</h2>
+                    <div class="text-muted small" id="currentDate"></div>
+                </div>
+                <div class="search-box mt-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Cari billing pasien dian">
+                </div>
+            </div>
+
+            <!-- Billing Table -->
+            <div class="billing-table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID Pasien</th>
+                            <th>Nama</th>
+                            <th>Total Tarif RS</th>
+                            <th>Total Klaim BPJS</th>
+                            <th>Billing Sign</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billingTableBody">
+                        <!-- Will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Data Pasien</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Patient Info Section -->
+                <div class="mb-4">
+                    <h6 class="text-secondary">Nama Lengkap</h6>
+                    <input type="text" id="modalNamaPasien" class="form-control" readonly>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-secondary">ID Pasien</h6>
+                        <input type="text" id="modalIdPasien" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-secondary">Kelas</h6>
+                        <input type="text" id="modalKelas" class="form-control" readonly>
+                    </div>
+                </div>
+
+                <!-- Dokter yang Menangani -->
+                <div class="mb-4">
+                    <h6 class="text-secondary fw-bold">Dokter yang Menangani</h6>
+                    <div id="dokterList" class="border rounded p-2 bg-light small">
+                        <span class="text-muted">Memuat data dokter...</span>
+                    </div>
+                </div>
+
+                <!-- Tindakan & ICD - Pisah Lama vs Baru -->
+                <div class="mb-4">
+                    <h6 class="text-secondary fw-bold">Tindakan RS</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Data yang sudah ada:</small>
+                            <div id="tindakanLama" class="border rounded p-2 bg-light small"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Data baru (akan ditambahkan):</small>
+                            <div id="tindakanBaru" class="border rounded p-2 bg-light small text-muted">Belum ada data baru</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-secondary fw-bold">ICD 9 & ICD 10</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">ICD 9 - Data yang sudah ada:</small>
+                            <div id="icd9Lama" class="border rounded p-2 bg-light small mb-2"></div>
+                            <small class="text-muted">ICD 10 - Data yang sudah ada:</small>
+                            <div id="icd10Lama" class="border rounded p-2 bg-light small"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">ICD 9 - Data baru:</small>
+                            <div id="icd9Baru" class="border rounded p-2 bg-light small mb-2 text-muted">Belum ada data baru</div>
+                            <small class="text-muted">ICD 10 - Data baru:</small>
+                            <div id="icd10Baru" class="border rounded p-2 bg-light small text-muted">Belum ada data baru</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-secondary">Total Tarif RS (Kumulatif)</h6>
+                    <input type="text" id="modalTotalTarif" class="form-control" readonly>
+                </div>
+
+                <!-- INACBG Form -->
+                <div class="mb-4">
+                    <h6 class="text-secondary">INA CBG</h6>
+                    <form id="inacbgForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tipe INACBG</label>
+                                <select id="tipeInacbg" class="form-select">
+                                    <option value="">-- Pilih Tipe --</option>
+                                    <option value="RI">RI (Rawat Inap)</option>
+                                    <option value="RJ">RJ (Rawat Jalan)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Masukkan Kode INA CBGS</label>
+                                <div class="input-group">
+                                    <select id="inacbgCode" class="form-select" disabled>
+                                        <option value="">-- Pilih Tipe INACBG Dulu --</option>
+                                    </select>
+                                    <span class="input-group-text" style="cursor: pointer; user-select: none;" title="Ganti ke input manual" onclick="toggleInacbgInput()">
+                                        ↔️
+                                    </span>
+                                </div>
+                                <input type="text" id="inacbgCodeManual" class="form-control d-none mt-2" placeholder="Ketik kode INACBG manual">
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="button" id="addCodeBtn" class="btn btn-primary w-100">+</button>
+                            </div>
+                        </div>
+
+                        <!-- INACBG Lama -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">INACBG yang sudah ada sebelumnya:</label>
+                            <div id="inacbgLamaContainer" class="border rounded p-2 bg-light small">
+                                <div id="inacbgRILama" class="mb-1"></div>
+                                <div id="inacbgRJLama"></div>
+                                <div id="totalKlaimLama" class="mt-2 fw-bold"></div>
+                            </div>
+                        </div>
+
+                        <!-- INACBG Baru -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">INACBG Baru (akan ditambahkan):</label>
+                            <div id="codeList" class="border rounded p-2 bg-light">
+                                <small class="text-muted">Belum ada kode baru</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Total Klaim Lama</label>
+                                <input type="number" id="totalKlaimLamaInput" class="form-control" placeholder="0" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Total Klaim Baru <span class="text-muted small">(Otomatis)</span></label>
+                                <input type="number" id="totalKlaim" class="form-control" placeholder="0" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Total Klaim Akhir</label>
+                                <input type="number" id="totalKlaimAkhir" class="form-control fw-bold" placeholder="0" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Billing Sign</label>
+                                <div id="billingSignContainer" class="mt-1">
+                                    <span id="billingSignBadge" class="badge bg-secondary">-</span>
+                                    <span id="billingSignText" class="ms-2 text-muted small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Keluar</label>
+                                <input type="date" id="tanggalKeluar" class="form-control">
+                            </div>
+                        </div>
+
+                        <div id="formAlert" class="alert d-none" role="alert"></div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="scriptAdmin.js"></script>
+</body>
+</html>

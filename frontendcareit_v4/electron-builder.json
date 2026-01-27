@@ -1,0 +1,24 @@
+{
+    "appId": "com.careit.app",
+    "productName": "CareIt",
+    "directories": {
+        "output": "dist",
+        "buildResources": "public"
+    },
+    "files": [
+        "out/**/*",
+        "electron.js",
+        "preload.js",
+        "package.json"
+    ],
+    "win": {
+        "target": "nsis",
+        "icon": "public/LOGO_CAREIT.ico"
+    },
+    "nsis": {
+        "oneClick": false,
+        "allowToChangeInstallationDirectory": true
+    },
+    "compression": "normal",
+    "electronVersion": "28.1.0"
+}

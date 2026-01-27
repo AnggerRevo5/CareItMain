@@ -1,0 +1,14 @@
+{
+  "nama_dokter": "Dr. Ahmad Wijaya",
+  "nama_pasien": "Budi Santoso",
+  "jenis_kelamin": "Laki-laki",
+  "usia": 45,
+  "ruangan": "R001",
+  "kelas": "1",
+  "tindakan_rs": "T001",
+  "icd9": "ICD9-001",
+  "icd10": "ICD10-001",
+  "cara_bayar": "BPJS",
+  "total_tarif_rs": 500000
+}
+

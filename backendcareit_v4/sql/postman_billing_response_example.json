@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "message": "Billing berhasil dibuat",
+  "data": {
+    "billing": {
+      "ID_Billing": "BILL-12345678-1234-1234-1234-123456789abc",
+      "ID_Pasien": "PAS-87654321-4321-4321-4321-cba987654321",
+      "Cara_Bayar": "BPJS",
+      "Tanggal_masuk": "2024-01-15T10:30:00Z",
+      "Tanggal_keluar": null,
+      "ID_Dokter": "DOK-001",
+      "Total_Tarif_RS": 500000,
+      "Total_Tarif_BPJS": 0,
+      "Billing_sign": "created"
+    },
+    "pasien": {
+      "ID_Pasien": "PAS-87654321-4321-4321-4321-cba987654321",
+      "Nama_Pasien": "Budi Santoso",
+      "Jenis_Kelamin": "Laki-laki",
+      "Usia": 45,
+      "Ruangan": "R001",
+      "Kelas": "1"
+    }
+  }
+}
+

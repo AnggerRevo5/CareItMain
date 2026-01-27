@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Billing Pasien BPJS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h2 class="mb-0 text-white">Form Billing Pasien BPJS</h2>
+        </div>
+        <div class="card-body">
+            <form id="bpjsForm">
+
+        <!-- === DOKTER === -->
+        <div class="mb-3">
+                    <label class="form-label">Nama Dokter</label>
+                    <div class="searchable-select-wrapper" id="wrapper_nama_dokter">
+                        <input type="text" class="searchable-select-input" id="nama_dokter" readonly placeholder="Dokter...">
+                        <span class="searchable-select-arrow">▼</span>
+                        <div class="searchable-select-dropdown" id="dropdown_nama_dokter">
+                            <div class="searchable-select-search">
+                                <input type="text" placeholder="Cari..." id="search_nama_dokter" autocomplete="off">
+                            </div>
+                            <div class="searchable-select-options" id="options_nama_dokter"></div>
+                        </div>
+                    </div>
+                    <select class="form-select d-none" id="select_nama_dokter" name="nama_dokter"></select>
+                </div>
+
+                <!-- NAMA PASIEN -->
+                <div class="mb-3 position-relative">
+                    <label class="form-label">Nama Pasien</label>
+                    <input type="text" class="form-control" id="nama_pasien" autocomplete="off">
+                    <div id="list_pasien" class="autocomplete-list"></div>
+                    <input type="hidden" id="id_pasien" name="id_pasien">
+                </div>
+
+        <!-- Auto Fill atau Manual -->
+            <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Jenis Kelamin</label>
+                <input type="text" class="form-control" id="jenis_kelamin" placeholder="Auto fill atau isi manual">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Usia</label>
+                <input type="number" class="form-control" id="usia" placeholder="Auto fill atau isi manual">
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Ruangan</label>
+                <div class="searchable-select-wrapper" id="wrapper_ruangan">
+                    <input type="text" class="searchable-select-input" id="ruangan" readonly placeholder="-- Pilih Ruangan --">
+                    <span class="searchable-select-arrow">▼</span>
+                    <div class="searchable-select-dropdown" id="dropdown_ruangan">
+                        <div class="searchable-select-search">
+                            <input type="text" placeholder="Cari..." id="search_ruangan" autocomplete="off">
+                        </div>
+                        <div class="searchable-select-options" id="options_ruangan"></div>
+                    </div>
+                </div>
+                <select class="form-select d-none" id="select_ruangan" name="ruangan"></select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Kelas</label>
+                <select class="form-select" id="kelas" name="kelas">
+                    <option value="">-- Pilih Kelas --</option>
+                    <option value="1">Kelas 1</option>
+                    <option value="2">Kelas 2</option>
+                    <option value="3">Kelas 3</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Cara Bayar</label>
+                <select class="form-select" id="cara_bayar" name="cara_bayar">
+                    <option value="">-- Pilih Cara Bayar --</option>
+                    <option value="BPJS">BPJS</option>
+                    <option value="UMUM">Umum</option>
+                </select>
+            </div>
+            <!-- Tanggal Keluar diisi oleh Admin Billing, bukan di form dokter -->
+                </div>
+
+                <!-- TINDAKAN -->
+        <div class="mb-3">
+            <label class="form-label">Tindakan RS</label>
+            <div class="searchable-select-wrapper multi-select" id="wrapper_tarif_rs">
+                <div class="searchable-select-input" id="tarif_rs" placeholder="-- Pilih --">
+                    <input type="text" id="input_tarif_rs" placeholder="Tindakan..." autocomplete="off">
+                </div>
+                <span class="searchable-select-arrow">▼</span>
+                <div class="searchable-select-dropdown" id="dropdown_tarif_rs">
+                    <div class="searchable-select-search">
+                        <input type="text" placeholder="Cari..." id="search_tarif_rs" autocomplete="off">
+                    </div>
+                    <div class="searchable-select-options" id="options_tarif_rs"></div>
+                </div>
+            </div>
+            <select class="form-select d-none" id="select_tarif_rs" name="tarif_rs" multiple></select>
+        </div>
+
+        <!-- ICD -->
+        <div class="mb-3">
+            <label class="form-label">ICD 9</label>
+            <div class="searchable-select-wrapper multi-select" id="wrapper_icd9">
+                <div class="searchable-select-input" id="icd9" placeholder="-- Pilih --">
+                    <input type="text" id="input_icd9" placeholder="-- Pilih --" autocomplete="off">
+                </div>
+                <span class="searchable-select-arrow">▼</span>
+                <div class="searchable-select-dropdown" id="dropdown_icd9">
+                    <div class="searchable-select-search">
+                        <input type="text" placeholder="Cari..." id="search_icd9" autocomplete="off">
+                    </div>
+                    <div class="searchable-select-options" id="options_icd9"></div>
+                </div>
+            </div>
+            <select class="form-select d-none" id="select_icd9" name="icd9" multiple></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ICD 10</label>
+            <div class="searchable-select-wrapper multi-select" id="wrapper_icd10">
+                <div class="searchable-select-input" id="icd10" placeholder="-- Pilih --">
+                    <input type="text" id="input_icd10" placeholder="-- Pilih --" autocomplete="off">
+                </div>
+                <span class="searchable-select-arrow">▼</span>
+                <div class="searchable-select-dropdown" id="dropdown_icd10">
+                    <div class="searchable-select-search">
+                        <input type="text" placeholder="Cari..." id="search_icd10" autocomplete="off">
+                    </div>
+                    <div class="searchable-select-options" id="options_icd10"></div>
+                </div>
+            </div>
+            <select class="form-select d-none" id="select_icd10" name="icd10" multiple></select>
+        </div>
+
+        <!-- RIWAYAT BILLING AKTIF (TINDAKAN & ICD SEBELUMNYA) -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">Riwayat Tindakan & ICD (Billing Aktif)</label>
+            <div id="billing_history_info" class="small text-muted mb-2">
+                Belum ada data yang dimuat. Pilih pasien untuk melihat riwayat.
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <h6 class="fw-semibold">Tindakan RS</h6>
+                    <ul id="history_tindakan_rs" class="list-group small"></ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-semibold">ICD 9</h6>
+                    <ul id="history_icd9" class="list-group small"></ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-semibold">ICD 10</h6>
+                    <ul id="history_icd10" class="list-group small"></ul>
+                </div>
+            </div>
+        </div>
+        
+                <!-- TOTAL TARIF RS -->
+                <div class="mb-3">
+                    <label class="form-label">Total Tarif RS</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="text" class="form-control" id="total_tarif_rs" name="total_tarif_rs" readonly placeholder="0">
+                    </div>
+                    <small class="text-muted">Total akan dihitung otomatis berdasarkan tindakan yang dipilih</small>
+                </div>
+                
+                <div id="formAlert" class="alert d-none" role="alert"></div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            💾 Simpan Data
+                        </button>
+                        <button type="button" id="saveDraftBtn" class="btn btn-outline-secondary btn-lg">💾 Save Draft</button>
+                        <button type="button" id="clearDraftBtn" class="btn btn-outline-danger btn-lg">🗑️ Clear Draft</button>
+                        <div id="draftStatus" class="align-self-center ms-2 text-muted" style="font-size:0.95rem"></div>
+                    </div>
+                </div>
+    </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- App script: loads dropdowns, autocomplete and form handlers -->
+<script src="script.js"></script>
+
+</body>
+</html>
