@@ -14,7 +14,7 @@ func KonekPG() (*gorm.DB, error) {
 	if dsn == "" {
 		user := envOrDefaultPG("DB_USER", "postgres")
 		pass := envOrDefaultPG("DB_PASSWORD", "gakbikinkembung25")
-		host := envOrDefaultPG("DB_HOST", "localhost")
+		host := envOrDefaultPG("DB_HOST", "postgres")
 		port := envOrDefaultPG("DB_PORT", "5432")
 		name := envOrDefaultPG("DB_NAME", "careit_db")
 

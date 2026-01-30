@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backendcareit_v4
+      dockerfile: Dockerfile
+    container_name: careit_backend
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      HOST: 0.0.0.0
+      PORT: 8081
+    ports:
+      - "8081:8081"
+    networks:
+      - careit_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontendcareit_v4
+      dockerfile: Dockerfile
+    container_name: careit_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8081
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - careit_network
+    restart: unless-stopped
+
+networks:
+  careit_network:
+    driver: bridge

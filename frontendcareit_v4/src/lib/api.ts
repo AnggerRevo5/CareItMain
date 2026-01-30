@@ -19,7 +19,7 @@ const getApiBaseUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL || "http://31.97.109.192:8082";
   } else {
     // Web browser: direct backend call
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
   }
 };
 
