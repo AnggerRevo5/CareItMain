@@ -31,4 +31,5 @@ npm-debug.log*
 *.test
 *.out
 
-
+# env files (can opt-in for committing if needed)
+.env

@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: careit_backend
     environment:
-      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -16,6 +16,8 @@ services:
       PORT: 8081
     ports:
       - "8081:8081"
+    depends_on:
+      - db
     networks:
       - careit_network
     restart: unless-stopped
@@ -35,6 +37,25 @@ services:
       - careit_network
     restart: unless-stopped
 
+  db:
+    image: postgres:18
+    container_name: careit_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./SQL:/docker-entrypoint-initdb.d
+      - careit_pgdata:/var/lib/postgresql
+    networks:
+      - careit_network
+
 networks:
   careit_network:
     driver: bridge
+
+volumes:
+  careit_pgdata:
