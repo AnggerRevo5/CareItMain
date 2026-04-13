@@ -68,10 +68,10 @@ func SendEmailToMultiple(to []string, subject, body string) error {
 	smtpPort := os.Getenv("SMTP_PORT")
 
 	if from == "" {
-		from = "asikmahdi@gmail.com"
+		from = "careit565@gmail.com"
 	}
 	if password == "" {
-		password = "njom rhxb prrj tuoj"
+		password = "gkhz bjax uamw xydf"
 	}
 	if smtpHost == "" {
 		smtpHost = "smtp.gmail.com"
