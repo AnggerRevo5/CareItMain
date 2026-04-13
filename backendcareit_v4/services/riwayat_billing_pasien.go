@@ -46,6 +46,7 @@ func GetRiwayatPasienAll(db *gorm.DB) ([]models.Riwayat_Pasien_all, error) {
 	if err := db.Table("\"billing_tindakan\"").
 		Where("\"ID_Billing\" IN ?", billingIDs).
 		Select("\"ID_Billing\", \"ID_Tarif_RS\" as \"Kode\"").
+		Order("\"ID_Billing\" ASC, \"tanggal_tindakan\" ASC").
 		Scan(&tindakanRows).Error; err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func GetRiwayatPasienAll(db *gorm.DB) ([]models.Riwayat_Pasien_all, error) {
 		tindakanMap[t.ID_Billing] = append(tindakanMap[t.ID_Billing], t.Kode)
 	}
 
-	// Ambil tanggal tindakan dari tabel billing_tindakan
+	// Ambil tanggal tindakan dari tabel billing_tindakan (ambil yang pertama aja per billing supaya konsisten)
 	tindakanDateMap := make(map[int]*time.Time)
 	var tindakanDateRows []struct {
 		ID_Billing       int
@@ -64,12 +65,13 @@ func GetRiwayatPasienAll(db *gorm.DB) ([]models.Riwayat_Pasien_all, error) {
 	if err := db.Table("\"billing_tindakan\"").
 		Where("\"ID_Billing\" IN ?", billingIDs).
 		Select("\"ID_Billing\", \"tanggal_tindakan\"").
+		Order("\"ID_Billing\" ASC, \"tanggal_tindakan\" ASC").
 		Scan(&tindakanDateRows).Error; err != nil {
 		return nil, err
 	}
 
 	for _, t := range tindakanDateRows {
-		if t.Tanggal_Tindakan != nil {
+		if t.Tanggal_Tindakan != nil && tindakanDateMap[t.ID_Billing] == nil {
 			tindakanDateMap[t.ID_Billing] = t.Tanggal_Tindakan
 		}
 	}
@@ -262,6 +264,7 @@ func GetAllRiwayatpasien(db *gorm.DB) ([]models.Request_Admin_Inacbg, error) {
 	if err := db.Table("\"billing_tindakan\"").
 		Where("\"ID_Billing\" IN ?", billingIDs).
 		Select("\"ID_Billing\", \"ID_Tarif_RS\" as \"Kode\"").
+		Order("\"ID_Billing\" ASC, \"tanggal_tindakan\" ASC").
 		Scan(&tindakanRows).Error; err != nil {
 		return nil, err
 	}

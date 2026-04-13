@@ -228,6 +228,7 @@ type BillingRequest struct {
 	Ruangan          string   `json:"ruangan" binding:"required"`
 	Kelas            string   `json:"kelas" binding:"required"`
 	Tindakan_RS      []string `json:"tindakan_rs" binding:"required"`
+	Tanggal_Masuk    string   `json:"tanggal_masuk"` // ← Added: Tanggal masuk dari frontend (format: YYYY-MM-DD)
 	Tanggal_Keluar   string   `json:"tanggal_keluar"`
 	Billing_sign     string   `json:"billing_sign"`
 	ICD9             []string `json:"icd9"`

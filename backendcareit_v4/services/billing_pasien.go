@@ -314,6 +314,30 @@ func DataFromFE(input models.BillingRequest) (
 
 	now := time.Now()
 
+	// Parse Tanggal_Masuk - accept multiple formats
+	var masukPtr *time.Time
+	if input.Tanggal_Masuk != "" && input.Tanggal_Masuk != "null" {
+		s := input.Tanggal_Masuk
+		var parsed time.Time
+		var err error
+		layouts := []string{time.RFC3339, "2006-01-02 15:04:05", "2006-01-02"}
+		for _, layout := range layouts {
+			parsed, err = time.Parse(layout, s)
+			if err == nil {
+				t := parsed
+				masukPtr = &t
+				break
+			}
+		}
+		if masukPtr == nil {
+			tx.Rollback()
+			return nil, nil, nil, nil, nil, fmt.Errorf("invalid tanggal_masuk format: %s", input.Tanggal_Masuk)
+		}
+	} else {
+		// Jika tidak ada input, default ke hari ini
+		masukPtr = &now
+	}
+
 	// Parse Tanggal_Keluar (frontend sends string). Accept multiple formats.
 	var keluarPtr *time.Time
 	if input.Tanggal_Keluar != "" && input.Tanggal_Keluar != "null" {
@@ -355,7 +379,7 @@ func DataFromFE(input models.BillingRequest) (
 			billing = models.BillingPasien{
 				ID_Pasien:      pasien.ID_Pasien,
 				Cara_Bayar:     input.Cara_Bayar,
-				Tanggal_masuk:  &now,
+				Tanggal_masuk:  masukPtr,
 				Tanggal_keluar: keluarPtr,
 				Total_Tarif_RS: input.Total_Tarif_RS,
 				Total_Klaim:    input.Total_Klaim_BPJS, // ← Changed: Use input value instead of hardcoded 0

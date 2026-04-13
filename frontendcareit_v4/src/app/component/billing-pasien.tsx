@@ -620,7 +620,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   // Tambah tindakan - nyimpen Deskripsi (bukan KodeRS) karena backend nyari pake Tindakan_RS (Deskripsi)
   const handleAddTindakan = (kode: string) => {
     const tarif = tarifRSList.find(t => (t as any).KodeRS === kode);
-    if (tarif && (tarif as any).Deskripsi && !selectedTindakan.includes((tarif as any).Deskripsi)) {
+    if (tarif && (tarif as any).Deskripsi && ((tarif as any).Deskripsi)) {
       setSelectedTindakan([...selectedTindakan, (tarif as any).Deskripsi]);
       setTindakanSearch('');
       setTindakanDropdownOpen(false);
@@ -654,9 +654,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     (t as any).KodeRS?.toLowerCase().includes(tindakanSearch.toLowerCase())
   );
 
-  // Hapus tindakan - sekarang pake Deskripsi
-  const handleRemoveTindakan = (deskripsi: string) => {
-    setSelectedTindakan(selectedTindakan.filter(t => t !== deskripsi));
+  // Hapus tindakan - sekarang support duplikat dengan remove by index
+  const handleRemoveTindakan = (index: number) => {
+    setSelectedTindakan(selectedTindakan.filter((_, i) => i !== index));
   };
 
   // Tambah ICD9 - nyimpen Prosedur (bukan Kode_ICD9) karena backend nyari pake Prosedur
@@ -1379,16 +1379,16 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
               {/* Selected tindakan chips */}
               {selectedTindakan.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedTindakan.map((t) => {
+                  {selectedTindakan.map((t, index) => {
                     const tarif = tarifRSList.find(tar => (tar as any).Deskripsi === t);
                     const harga = (tarif as any)?.Harga || 0;
                     return (
-                      <div key={t} className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm">
+                      <div key={`${index}_${t}`} className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm">
                         <span className="mr-2">{t}</span>
                         <span className="text-xs text-gray-600 mr-2">Rp {harga.toLocaleString('id-ID')}</span>
                         <button
                           type="button"
-                          onClick={() => handleRemoveTindakan(t)}
+                          onClick={() => handleRemoveTindakan(index)}
                           className="text-red-500 hover:text-red-700 ml-1"
                           aria-label={`Hapus tindakan ${t}`}
                         >
