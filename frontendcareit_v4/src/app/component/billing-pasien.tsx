@@ -1,7 +1,13 @@
 "use client";
-import { useState, useRef, useEffect } from 'react';
-import { FaCalendarAlt, FaPlus, FaTrash, FaSearch, FaChevronDown } from 'react-icons/fa';
-import EditPasienModal from './edit-pasien-modal';
+import { useState, useRef, useEffect } from "react";
+import {
+  FaCalendarAlt,
+  FaPlus,
+  FaTrash,
+  FaSearch,
+  FaChevronDown,
+} from "react-icons/fa";
+import EditPasienModal from "./edit-pasien-modal";
 import {
   getDokter,
   getRuangan,
@@ -17,7 +23,7 @@ import {
   type TarifData,
   type BillingRequest,
   getBillingAktifByNama,
-} from '@/lib/api-helper';
+} from "@/lib/api-helper";
 
 interface BillingPasienProps {
   onEditBilling?: (billingId: number, pasienName: string) => void;
@@ -25,18 +31,18 @@ interface BillingPasienProps {
 
 const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   // State form
-  const [namaPasien, setNamaPasien] = useState('');
-  const [idPasien, setIdPasien] = useState('');
-  const [usia, setUsia] = useState('');
-  const [gender, setGender] = useState('Laki-Laki');
-  const [ruangan, setRuangan] = useState('');
-  const [kelas, setKelas] = useState('');
-  const [tanggalMasuk, setTanggalMasuk] = useState('');
-  const [tanggalKeluar, setTanggalKeluar] = useState('');
-  const [dpjp, setDpjp] = useState('');
-  const [caraBayar, setCaraBayar] = useState('BPJS');
+  const [namaPasien, setNamaPasien] = useState("");
+  const [idPasien, setIdPasien] = useState("");
+  const [usia, setUsia] = useState("");
+  const [gender, setGender] = useState("Laki-Laki");
+  const [ruangan, setRuangan] = useState("");
+  const [kelas, setKelas] = useState("");
+  const [tanggalMasuk, setTanggalMasuk] = useState("");
+  const [tanggalKeluar, setTanggalKeluar] = useState("");
+  const [dpjp, setDpjp] = useState("");
+  const [caraBayar, setCaraBayar] = useState("BPJS");
   const [totalTarifRS, setTotalTarifRS] = useState(0);
-  const [userRole, setUserRole] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>("");
 
   // Data dropdown
   const [dokterList, setDokterList] = useState<Dokter[]>([]);
@@ -62,7 +68,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     tanggal_masuk?: string | null;
     tanggal_keluar?: string | null;
   } | null>(null);
-  const [billingHistoryInfo, setBillingHistoryInfo] = useState('Belum ada data yang dimuat. Pilih pasien untuk melihat riwayat.');
+  const [billingHistoryInfo, setBillingHistoryInfo] = useState(
+    "Belum ada data yang dimuat. Pilih pasien untuk melihat riwayat.",
+  );
 
   // State edit identitas modal
   const [showEditModal, setShowEditModal] = useState(false);
@@ -79,8 +87,8 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
   // State UI
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [searchingPasien, setSearchingPasien] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [nameDropdownOpen, setNameDropdownOpen] = useState(false);
@@ -91,46 +99,50 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     const totalTarif = tarif || 0;
     const klaim = totalKlaim || 0;
 
-    if (!klaim || klaim === 0) return '';
+    if (!klaim || klaim === 0) return "";
     const percentage = (totalTarif / klaim) * 100;
 
-    if (percentage <= 25) {
-      return "Hijau"; // Tarif RS <=25% dari Klaim BPJS Efektif = AMAN
-    } else if (percentage <= 50) {
-      return "Kuning"; // 26%-50% = PERLU PERHATIAN
+    if (percentage <= 70) {
+      return "Hijau"; // Tarif RS <=70% dari Klaim BPJS Efektif = AMAN
+    } else if (percentage > 70 && percentage <= 99) {
+      return "Kuning"; // 71%-99% = PERLU PERHATIAN
     } else {
-      return "Merah"; // >50% = WASPADA
+      return "Merah"; // >99% = WASPADA
     }
   };
-
   // Nilai display live (dipake di card)
-  const totalKlaimBPJSLive = (billingHistory && billingHistory.total_klaim) ? billingHistory.total_klaim : 0;
+  const totalKlaimBPJSLive =
+    billingHistory && billingHistory.total_klaim
+      ? billingHistory.total_klaim
+      : 0;
   const liveBillingSign = computeBillingSign(totalTarifRS, totalKlaimBPJSLive);
-  
+
   // Debug logging buat billing sign changes
   useEffect(() => {
-    console.log('🎨 Billing Sign Calculation:', {
+    console.log("🎨 Billing Sign Calculation:", {
       totalTarifRS,
       totalKlaimBPJSLive,
       liveBillingSign,
-      percentage: totalKlaimBPJSLive ? (totalTarifRS / totalKlaimBPJSLive * 100).toFixed(2) : 'N/A'
+      percentage: totalKlaimBPJSLive
+        ? ((totalTarifRS / totalKlaimBPJSLive) * 100).toFixed(2)
+        : "N/A",
     });
   }, [totalTarifRS, totalKlaimBPJSLive, liveBillingSign]);
 
   // State dropdown searchable
-  const [tindakanSearch, setTindakanSearch] = useState('');
+  const [tindakanSearch, setTindakanSearch] = useState("");
   const [tindakanDropdownOpen, setTindakanDropdownOpen] = useState(false);
   const [tindakanJustClosed, setTindakanJustClosed] = useState(false);
-  const [icd9Search, setIcd9Search] = useState('');
+  const [icd9Search, setIcd9Search] = useState("");
   const [icd9DropdownOpen, setIcd9DropdownOpen] = useState(false);
   const [icd9JustClosed, setIcd9JustClosed] = useState(false);
-  const [icd10Search, setIcd10Search] = useState('');
+  const [icd10Search, setIcd10Search] = useState("");
   const [icd10DropdownOpen, setIcd10DropdownOpen] = useState(false);
   const [icd10JustClosed, setIcd10JustClosed] = useState(false);
-  const [ruanganSearch, setRuanganSearch] = useState('');
+  const [ruanganSearch, setRuanganSearch] = useState("");
   const [ruanganDropdownOpen, setRuanganDropdownOpen] = useState(false);
   const [ruanganJustClosed, setRuanganJustClosed] = useState(false);
-  const [dpjpSearch, setDpjpSearch] = useState('');
+  const [dpjpSearch, setDpjpSearch] = useState("");
   const [dpjpDropdownOpen, setDpjpDropdownOpen] = useState(false);
   const [dpjpJustClosed, setDpjpJustClosed] = useState(false);
 
@@ -153,8 +165,8 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
     const todayString = `${year}-${month}-${day}`;
     setTanggalMasuk(todayString);
   }, []);
@@ -167,7 +179,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         const dokter = JSON.parse(dokterData);
         if (dokter.id && dokter.nama) {
           // Cari dokter di dokterList berdasarkan ID
-          const foundDokter = dokterList.find(d => (d as any).ID_Dokter === dokter.id);
+          const foundDokter = dokterList.find(
+            (d) => (d as any).ID_Dokter === dokter.id,
+          );
           if (foundDokter) {
             // Set DPJP pake ID dokter
             setDpjp((foundDokter as any).ID_Dokter.toString());
@@ -180,7 +194,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
           }
         }
       } catch (err) {
-        console.error('Error parsing dokter data:', err);
+        console.error("Error parsing dokter data:", err);
       }
     }
   }, [dokterList]);
@@ -195,13 +209,14 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     const fetchDropdownData = async () => {
       try {
         // Cuma fetch data dropdown, GADA save apapun
-        const [dokterRes, ruanganRes, icd9Res, icd10Res, tarifRes] = await Promise.all([
-          getDokter(),
-          getRuangan(),
-          getICD9(),
-          getICD10(),
-          getTarifRumahSakit(),
-        ]);
+        const [dokterRes, ruanganRes, icd9Res, icd10Res, tarifRes] =
+          await Promise.all([
+            getDokter(),
+            getRuangan(),
+            getICD9(),
+            getICD10(),
+            getTarifRumahSakit(),
+          ]);
 
         if (dokterRes.data) setDokterList(dokterRes.data);
         if (ruanganRes.data) setRuanganList(ruanganRes.data);
@@ -209,8 +224,8 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         if (icd10Res.data) setIcd10List(icd10Res.data);
         if (tarifRes.data) setTarifRSList(tarifRes.data);
       } catch (err) {
-        console.error('Error fetching dropdown data:', err);
-        setError('Gagal memuat data dropdown');
+        console.error("Error fetching dropdown data:", err);
+        setError("Gagal memuat data dropdown");
       }
     };
 
@@ -226,7 +241,8 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       // Cek dropdown tindakan ada atau nggak
       if (tindakanDropdownOpen) {
         const isClickInsideInput = tindakanInputRef.current?.contains(target);
-        const isClickInsideDropdown = tindakanDropdownRef.current?.contains(target);
+        const isClickInsideDropdown =
+          tindakanDropdownRef.current?.contains(target);
         if (!isClickInsideInput && !isClickInsideDropdown) {
           setTindakanDropdownOpen(false);
         }
@@ -244,7 +260,8 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       // Cek dropdown ICD10 ada atau nggak
       if (icd10DropdownOpen) {
         const isClickInsideInput = icd10InputRef.current?.contains(target);
-        const isClickInsideDropdown = icd10DropdownRef.current?.contains(target);
+        const isClickInsideDropdown =
+          icd10DropdownRef.current?.contains(target);
         if (!isClickInsideInput && !isClickInsideDropdown) {
           setIcd10DropdownOpen(false);
         }
@@ -253,7 +270,8 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       // Cek dropdown Ruangan ada atau nggak
       if (ruanganDropdownOpen) {
         const isClickInsideInput = ruanganInputRef.current?.contains(target);
-        const isClickInsideDropdown = ruanganDropdownRef.current?.contains(target);
+        const isClickInsideDropdown =
+          ruanganDropdownRef.current?.contains(target);
         if (!isClickInsideInput && !isClickInsideDropdown) {
           setRuanganDropdownOpen(false);
         }
@@ -278,69 +296,95 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [tindakanDropdownOpen, icd9DropdownOpen, icd10DropdownOpen, ruanganDropdownOpen, dpjpDropdownOpen, nameDropdownOpen]);
+  }, [
+    tindakanDropdownOpen,
+    icd9DropdownOpen,
+    icd10DropdownOpen,
+    ruanganDropdownOpen,
+    dpjpDropdownOpen,
+    nameDropdownOpen,
+  ]);
 
   // Track changes di totalTarifRS sama billingHistory buat debug
   useEffect(() => {
-    const totalKlaimBPJSLive = (billingHistory && billingHistory.total_klaim) ? billingHistory.total_klaim : 0;
-    const liveBillingSign = computeBillingSign(totalTarifRS, totalKlaimBPJSLive);
-    console.log('📈 Live Values Changed:', {
+    const totalKlaimBPJSLive =
+      billingHistory && billingHistory.total_klaim
+        ? billingHistory.total_klaim
+        : 0;
+    const liveBillingSign = computeBillingSign(
+      totalTarifRS,
+      totalKlaimBPJSLive,
+    );
+    console.log("📈 Live Values Changed:", {
       totalTarifRS,
       totalKlaimBPJSLive,
       liveBillingSign,
-      billingHistoryExists: !!billingHistory
+      billingHistoryExists: !!billingHistory,
     });
   }, [totalTarifRS, billingHistory]);
 
   // Dengerin event billingDataUpdated dari edit modal sama refresh data
   useEffect(() => {
     const handleBillingDataUpdated = (event: any) => {
-      console.log('📢 EVENT RECEIVED in billing-pasien!');
-      console.log('📢 Full event:', event);
-      console.log('📢 event.detail:', event.detail);
-      console.log('📢 event.detail.totalTarifRS:', event.detail?.totalTarifRS);
-      console.log('📢 Type of totalTarifRS:', typeof event.detail?.totalTarifRS);
-      
+      console.log("📢 EVENT RECEIVED in billing-pasien!");
+      console.log("📢 Full event:", event);
+      console.log("📢 event.detail:", event.detail);
+      console.log("📢 event.detail.totalTarifRS:", event.detail?.totalTarifRS);
+      console.log(
+        "📢 Type of totalTarifRS:",
+        typeof event.detail?.totalTarifRS,
+      );
+
       // Update state langsung pake data dari event
       if (event.detail) {
-        console.log('✅ Got event.detail, processing...');
-        
+        console.log("✅ Got event.detail, processing...");
+
         // Update total tarif
-        if (event.detail.totalTarifRS !== undefined && event.detail.totalTarifRS !== null) {
-          console.log('💰 Setting totalTarifRS from event:', event.detail.totalTarifRS);
+        if (
+          event.detail.totalTarifRS !== undefined &&
+          event.detail.totalTarifRS !== null
+        ) {
+          console.log(
+            "💰 Setting totalTarifRS from event:",
+            event.detail.totalTarifRS,
+          );
           setTotalTarifRS(event.detail.totalTarifRS);
         }
-        
+
         // Update billing history pake data baru
         if (billingHistory) {
-          console.log('🔄 Updating billingHistory');
+          console.log("🔄 Updating billingHistory");
           const updatedHistory = {
             ...billingHistory,
-            total_tarif_rs: event.detail.totalTarifRS || billingHistory.total_tarif_rs,
+            total_tarif_rs:
+              event.detail.totalTarifRS || billingHistory.total_tarif_rs,
             tindakan_rs: event.detail.tindakan || billingHistory.tindakan_rs,
             icd9: event.detail.icd9 || billingHistory.icd9,
-            icd10: event.detail.icd10 || billingHistory.icd10
+            icd10: event.detail.icd10 || billingHistory.icd10,
           };
-          console.log('🔄 New billingHistory:', updatedHistory);
+          console.log("🔄 New billingHistory:", updatedHistory);
           setBillingHistory(updatedHistory);
         } else {
-          console.warn('⚠️ billingHistory is null, cannot update');
+          console.warn("⚠️ billingHistory is null, cannot update");
         }
       } else {
-        console.warn('⚠️ event.detail is missing');
+        console.warn("⚠️ event.detail is missing");
       }
     };
 
-    if (typeof window !== 'undefined') {
-      console.log('📌 Setting up event listener for billingDataUpdated');
-      window.addEventListener('billingDataUpdated', handleBillingDataUpdated);
+    if (typeof window !== "undefined") {
+      console.log("📌 Setting up event listener for billingDataUpdated");
+      window.addEventListener("billingDataUpdated", handleBillingDataUpdated);
       return () => {
-        console.log('📌 Removing event listener for billingDataUpdated');
-        window.removeEventListener('billingDataUpdated', handleBillingDataUpdated);
+        console.log("📌 Removing event listener for billingDataUpdated");
+        window.removeEventListener(
+          "billingDataUpdated",
+          handleBillingDataUpdated,
+        );
       };
     }
   }, [billingHistory]);
@@ -348,35 +392,42 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   // Helper function buat set ruangan display text berdasarkan ID/name
   const setRuanganDisplay = (ruanganValue: string | number | undefined) => {
     if (!ruanganValue) {
-      setRuangan('');
-      setRuanganSearch('');
+      setRuangan("");
+      setRuanganSearch("");
       return;
     }
 
     const ruanganStr = ruanganValue.toString().trim();
     if (!ruanganStr) {
-      setRuangan('');
-      setRuanganSearch('');
+      setRuangan("");
+      setRuanganSearch("");
       return;
     }
 
     // Coba cari dari ID dulu
-    const ruanganDataById = ruanganList.find(r => (r as any).ID_Ruangan?.toString() === ruanganStr);
+    const ruanganDataById = ruanganList.find(
+      (r) => (r as any).ID_Ruangan?.toString() === ruanganStr,
+    );
     if (ruanganDataById) {
       setRuangan((ruanganDataById as any).Nama_Ruangan); // ← FIX: Store NAMA, not ID
       setRuanganSearch((ruanganDataById as any).Nama_Ruangan);
-      console.log(`✅ Ruangan matched by ID: ${ruanganStr} → ${(ruanganDataById as any).Nama_Ruangan}`);
+      console.log(
+        `✅ Ruangan matched by ID: ${ruanganStr} → ${(ruanganDataById as any).Nama_Ruangan}`,
+      );
       return;
     }
 
     // Coba cari dari name kalo gak ketemu dari ID
-    const ruanganDataByName = ruanganList.find(r => 
-      (r as any).Nama_Ruangan?.toLowerCase() === ruanganStr.toLowerCase()
+    const ruanganDataByName = ruanganList.find(
+      (r) =>
+        (r as any).Nama_Ruangan?.toLowerCase() === ruanganStr.toLowerCase(),
     );
     if (ruanganDataByName) {
       setRuangan((ruanganDataByName as any).Nama_Ruangan); // ← FIX: Store NAMA, not ID
       setRuanganSearch((ruanganDataByName as any).Nama_Ruangan);
-      console.log(`✅ Ruangan matched by name: ${ruanganStr} → ${(ruanganDataByName as any).Nama_Ruangan}`);
+      console.log(
+        `✅ Ruangan matched by name: ${ruanganStr} → ${(ruanganDataByName as any).Nama_Ruangan}`,
+      );
       return;
     }
 
@@ -391,13 +442,13 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   // Search pasien - CUMA NGISI FORM, GADA SAVE
   const handleSearchPasien = async () => {
     if (!namaPasien.trim()) {
-      setError('Masukkan nama pasien terlebih dahulu');
+      setError("Masukkan nama pasien terlebih dahulu");
       return;
     }
 
     try {
       setSearchingPasien(true);
-      setError('');
+      setError("");
       const response = await searchPasien(namaPasien);
 
       if (response.error) {
@@ -425,7 +476,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         }
       }
     } catch (err) {
-      setError('Gagal mencari pasien');
+      setError("Gagal mencari pasien");
       console.error(err);
     } finally {
       setSearchingPasien(false);
@@ -437,20 +488,22 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     try {
       if (!namaPasien || !namaPasien.trim()) {
         setBillingHistory(null);
-        setBillingHistoryInfo('Nama pasien tidak boleh kosong');
+        setBillingHistoryInfo("Nama pasien tidak boleh kosong");
         setTotalTarifRS(0);
         return;
       }
 
       const res = await getBillingAktifByNama(namaPasien);
 
-      console.log('Response dari getBillingAktifByNama:', res);
-      console.log('📡 Full API Response:', JSON.stringify(res, null, 2));
+      console.log("Response dari getBillingAktifByNama:", res);
+      console.log("📡 Full API Response:", JSON.stringify(res, null, 2));
 
       if (res.status === 404 || !res.data) {
-        console.log('Tidak ada billing aktif untuk pasien ini');
+        console.log("Tidak ada billing aktif untuk pasien ini");
         setBillingHistory(null);
-        setBillingHistoryInfo('Tidak ada riwayat billing aktif untuk pasien ini.');
+        setBillingHistoryInfo(
+          "Tidak ada riwayat billing aktif untuk pasien ini.",
+        );
         setTotalTarifRS(0);
         return;
       }
@@ -462,9 +515,12 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       // Handle berbagai struktur response
       // Backend returns: { status: "success", data: { billing, tindakan_rs, icd9, icd10, dokter, inacbg_ri, inacbg_rj } }
       let billingData = res.data;
-      
+
       // Kalo data asli nested di bawah .data property
-      if ((res.data as any)?.data && typeof (res.data as any).data === 'object') {
+      if (
+        (res.data as any)?.data &&
+        typeof (res.data as any).data === "object"
+      ) {
         // Cek kalo struktur nested dari backend
         if ((res.data as any).data.billing !== undefined) {
           // Ini struktur nested yang benar dari backend
@@ -475,25 +531,43 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         }
       }
 
-      console.log('Billing data extracted:', billingData);
+      console.log("Billing data extracted:", billingData);
 
       // Ambil array dengan aman
       // Cek dua struktur: top-level sama nested dari backend
-      const tindakan = Array.isArray((billingData as any)?.tindakan_rs) ? (billingData as any).tindakan_rs : 
-                       Array.isArray((billingData as any)?.tindakan) ? (billingData as any).tindakan : [];
-      const icd9 = Array.isArray((billingData as any)?.icd9) ? (billingData as any).icd9 : [];
-      const icd10 = Array.isArray((billingData as any)?.icd10) ? (billingData as any).icd10 : [];
-      const inacbgRI = Array.isArray((billingData as any)?.inacbg_ri) ? (billingData as any).inacbg_ri : [];
-      const inacbgRJ = Array.isArray((billingData as any)?.inacbg_rj) ? (billingData as any).inacbg_rj : [];
+      const tindakan = Array.isArray((billingData as any)?.tindakan_rs)
+        ? (billingData as any).tindakan_rs
+        : Array.isArray((billingData as any)?.tindakan)
+          ? (billingData as any).tindakan
+          : [];
+      const icd9 = Array.isArray((billingData as any)?.icd9)
+        ? (billingData as any).icd9
+        : [];
+      const icd10 = Array.isArray((billingData as any)?.icd10)
+        ? (billingData as any).icd10
+        : [];
+      const inacbgRI = Array.isArray((billingData as any)?.inacbg_ri)
+        ? (billingData as any).inacbg_ri
+        : [];
+      const inacbgRJ = Array.isArray((billingData as any)?.inacbg_rj)
+        ? (billingData as any).inacbg_rj
+        : [];
       const inacbg = [...inacbgRI, ...inacbgRJ];
 
-      console.log('Extracted arrays:', { tindakan: tindakan.length, icd9: icd9.length, icd10: icd10.length, inacbg: inacbg.length });
-      console.log('Raw arrays:', { tindakan, icd9, icd10, inacbg });
+      console.log("Extracted arrays:", {
+        tindakan: tindakan.length,
+        icd9: icd9.length,
+        icd10: icd10.length,
+        inacbg: inacbg.length,
+      });
+      console.log("Raw arrays:", { tindakan, icd9, icd10, inacbg });
 
       // Hitung total_tarif_rs dari tindakan_rs pake lookup di tarifRSList
       let calculatedTotalTarif = 0;
       tindakan.forEach((deskripsi: string) => {
-        const tarif = tarifRSList.find(t => (t as any).Deskripsi === deskripsi);
+        const tarif = tarifRSList.find(
+          (t) => (t as any).Deskripsi === deskripsi,
+        );
         if (tarif && (tarif as any).Harga) {
           calculatedTotalTarif += (tarif as any).Harga;
         }
@@ -501,10 +575,17 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
       // Pilih stored total_tarif_rs dari backend billing object kalo ada
       const billingObj = (billingData as any)?.billing || billingData;
-      const storedTotalTarif = (billingObj as any)?.Total_Tarif_RS || (billingObj as any)?.total_tarif_rs || (billingObj as any)?.Total_Tarif || 0;
-      const finalTotalTarif = storedTotalTarif && storedTotalTarif > 0 ? storedTotalTarif : calculatedTotalTarif;
+      const storedTotalTarif =
+        (billingObj as any)?.Total_Tarif_RS ||
+        (billingObj as any)?.total_tarif_rs ||
+        (billingObj as any)?.Total_Tarif ||
+        0;
+      const finalTotalTarif =
+        storedTotalTarif && storedTotalTarif > 0
+          ? storedTotalTarif
+          : calculatedTotalTarif;
 
-      console.log('🔍 Tarif Extraction Debug:', {
+      console.log("🔍 Tarif Extraction Debug:", {
         billingObjKeys: Object.keys(billingObj),
         billingObj_Total_Tarif_RS: (billingObj as any)?.Total_Tarif_RS,
         billingObj_total_tarif_rs: (billingObj as any)?.total_tarif_rs,
@@ -512,36 +593,90 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         storedTotalTarif,
         calculatedTotalTarif,
         finalTotalTarif,
-        fulBillingObj: JSON.stringify(billingObj) // Log full object buat verify structure
+        fulBillingObj: JSON.stringify(billingObj), // Log full object buat verify structure
       });
 
       // Ambil billing dates sama total_klaim - cek di billing object dulu, terus top-level
-      let tanggalMasuk = (billingObj as any)?.Tanggal_masuk || (billingObj as any)?.tanggal_masuk;
-      let tanggalKeluar = (billingObj as any)?.Tanggal_keluar || (billingObj as any)?.tanggal_keluar;
-      let totalKlaim = (billingObj as any)?.Total_Tarif_BPJS || (billingObj as any)?.total_klaim_bpjs || (billingObj as any)?.total_klaim || (billingData as any)?.total_klaim || (billingData as any)?.Total_Klaim || 0;
-      
-      console.log('💾 Extracted dates & total_klaim:', { tanggalMasuk, tanggalKeluar, totalKlaim, billingObj, storageField: 'Checked multiple possible field names' });
+      let tanggalMasuk =
+        (billingObj as any)?.Tanggal_masuk ||
+        (billingObj as any)?.tanggal_masuk;
+      let tanggalKeluar =
+        (billingObj as any)?.Tanggal_keluar ||
+        (billingObj as any)?.tanggal_keluar;
+      let totalKlaim =
+        (billingObj as any)?.Total_Tarif_BPJS ||
+        (billingObj as any)?.total_klaim_bpjs ||
+        (billingObj as any)?.total_klaim ||
+        (billingData as any)?.total_klaim ||
+        (billingData as any)?.Total_Klaim ||
+        0;
+
+      console.log("💾 Extracted dates & total_klaim:", {
+        tanggalMasuk,
+        tanggalKeluar,
+        totalKlaim,
+        billingObj,
+        storageField: "Checked multiple possible field names",
+      });
 
       // Set billing history buat ditampilkan di tabel aja
-      if (tindakan.length > 0 || icd9.length > 0 || icd10.length > 0 || inacbg.length > 0) {
-        const billingId = (billingData as any)?.ID_Billing || (billingData as any)?.id_billing || (billingObj as any)?.ID_Billing || (billingObj as any)?.id_billing;
-        console.log('💾 Setting BillingHistory with:', { finalTotalTarif, totalKlaim, billingId });
-        setBillingHistory({ tindakan_rs: tindakan, icd9, icd10, inacbg, total_tarif_rs: finalTotalTarif, total_klaim: totalKlaim, billingId, tanggal_masuk: tanggalMasuk, tanggal_keluar: tanggalKeluar });
-        setBillingHistoryInfo('Riwayat billing aktif berhasil dimuat.');
+      if (
+        tindakan.length > 0 ||
+        icd9.length > 0 ||
+        icd10.length > 0 ||
+        inacbg.length > 0
+      ) {
+        const billingId =
+          (billingData as any)?.ID_Billing ||
+          (billingData as any)?.id_billing ||
+          (billingObj as any)?.ID_Billing ||
+          (billingObj as any)?.id_billing;
+        console.log("💾 Setting BillingHistory with:", {
+          finalTotalTarif,
+          totalKlaim,
+          billingId,
+        });
+        setBillingHistory({
+          tindakan_rs: tindakan,
+          icd9,
+          icd10,
+          inacbg,
+          total_tarif_rs: finalTotalTarif,
+          total_klaim: totalKlaim,
+          billingId,
+          tanggal_masuk: tanggalMasuk,
+          tanggal_keluar: tanggalKeluar,
+        });
+        setBillingHistoryInfo("Riwayat billing aktif berhasil dimuat.");
       } else {
         setBillingHistory(null);
-        setBillingHistoryInfo('Tidak ada riwayat billing aktif untuk pasien ini.');
+        setBillingHistoryInfo(
+          "Tidak ada riwayat billing aktif untuk pasien ini.",
+        );
       }
 
       // Auto-fill total_tarif_rs ke form dari stored total atau calculated total
-      console.log('💾 Setting TotalTarifRS:', finalTotalTarif);
+      console.log("💾 Setting TotalTarifRS:", finalTotalTarif);
       setTotalTarifRS(finalTotalTarif);
 
-      console.log('Billing aktif history loaded:', { tindakan, icd9, icd10, inacbg, calculatedTotalTarif, storedTotalTarif, finalTotalTarif });
+      console.log("Billing aktif history loaded:", {
+        tindakan,
+        icd9,
+        icd10,
+        inacbg,
+        calculatedTotalTarif,
+        storedTotalTarif,
+        finalTotalTarif,
+      });
     } catch (err) {
-      console.error('Error loading billing history:', err);
+      console.error("Error loading billing history:", err);
       setBillingHistory(null);
-      setBillingHistoryInfo('Error: Gagal memload riwayat billing. ' + (err instanceof Error ? err.message : 'Silakan cek console untuk detail.'));
+      setBillingHistoryInfo(
+        "Error: Gagal memload riwayat billing. " +
+          (err instanceof Error
+            ? err.message
+            : "Silakan cek console untuk detail."),
+      );
       setTotalTarifRS(0);
     }
   };
@@ -585,21 +720,21 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   // pilih pasien dari suggestions sama ngisi form, mapping gender
   const selectPasien = (pasien: any) => {
     if (!pasien) return;
-    setNamaPasien(pasien.Nama_Pasien || '');
-    setIdPasien(pasien.ID_Pasien?.toString() || '');
-    setUsia(pasien.Usia?.toString() || '');
+    setNamaPasien(pasien.Nama_Pasien || "");
+    setIdPasien(pasien.ID_Pasien?.toString() || "");
+    setUsia(pasien.Usia?.toString() || "");
 
     // Map gender values dari backend ke labels form
-    const jk = (pasien.Jenis_Kelamin || '').toString().toLowerCase();
-    if (jk.includes('laki') || jk.includes('pria')) {
-      setGender('Laki-Laki');
-    } else if (jk.includes('wanita') || jk.includes('perempuan')) {
-      setGender('Perempuan');
+    const jk = (pasien.Jenis_Kelamin || "").toString().toLowerCase();
+    if (jk.includes("laki") || jk.includes("pria")) {
+      setGender("Laki-Laki");
+    } else if (jk.includes("wanita") || jk.includes("perempuan")) {
+      setGender("Perempuan");
     } else {
-      setGender(pasien.Jenis_Kelamin || 'Laki-Laki');
+      setGender(pasien.Jenis_Kelamin || "Laki-Laki");
     }
 
-    setKelas(pasien.Kelas || '');
+    setKelas(pasien.Kelas || "");
 
     // Set ruangan dengan helper function
     setRuanganDisplay(pasien.Ruangan);
@@ -619,10 +754,10 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
   // Tambah tindakan - nyimpen Deskripsi (bukan KodeRS) karena backend nyari pake Tindakan_RS (Deskripsi)
   const handleAddTindakan = (kode: string) => {
-    const tarif = tarifRSList.find(t => (t as any).KodeRS === kode);
-    if (tarif && (tarif as any).Deskripsi && ((tarif as any).Deskripsi)) {
+    const tarif = tarifRSList.find((t) => (t as any).KodeRS === kode);
+    if (tarif && (tarif as any).Deskripsi && (tarif as any).Deskripsi) {
       setSelectedTindakan([...selectedTindakan, (tarif as any).Deskripsi]);
-      setTindakanSearch('');
+      setTindakanSearch("");
       setTindakanDropdownOpen(false);
     }
   };
@@ -632,26 +767,34 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   useEffect(() => {
     // Hitung total dari selectedTindakan (tindakan BARU yang ditambahin)
     const selectedTotal = selectedTindakan.reduce((sum, deskripsi) => {
-      const tarif = tarifRSList.find(t => (t as any).Deskripsi === deskripsi);
+      const tarif = tarifRSList.find((t) => (t as any).Deskripsi === deskripsi);
       const harga = (tarif as any)?.Harga || 0;
       console.log(`📊 Tindakan selected: ${deskripsi} → Harga: ${harga}`);
       return sum + harga;
     }, 0);
 
     // Ngambil baseline dari billing history (total tarif dari DB)
-    const billingHistoryTarif = (billingHistory && billingHistory.total_tarif_rs) ? billingHistory.total_tarif_rs : 0;
+    const billingHistoryTarif =
+      billingHistory && billingHistory.total_tarif_rs
+        ? billingHistory.total_tarif_rs
+        : 0;
 
     // Total = data DB + tindakan baru yang dipilih (REAL-TIME!)
     const total = billingHistoryTarif + selectedTotal;
-    
-    console.log(`💰 Real-time Total Tarif RS: ${total} (DB: ${billingHistoryTarif} + Selected: ${selectedTotal})`);
+
+    console.log(
+      `💰 Real-time Total Tarif RS: ${total} (DB: ${billingHistoryTarif} + Selected: ${selectedTotal})`,
+    );
     setTotalTarifRS(total);
   }, [selectedTindakan, tarifRSList, billingHistory]);
 
   // Filter tindakan berdasarkan search
-  const filteredTindakan = tarifRSList.filter((t) =>
-    (t as any).Deskripsi?.toLowerCase().includes(tindakanSearch.toLowerCase()) ||
-    (t as any).KodeRS?.toLowerCase().includes(tindakanSearch.toLowerCase())
+  const filteredTindakan = tarifRSList.filter(
+    (t) =>
+      (t as any).Deskripsi?.toLowerCase().includes(
+        tindakanSearch.toLowerCase(),
+      ) ||
+      (t as any).KodeRS?.toLowerCase().includes(tindakanSearch.toLowerCase()),
   );
 
   // Hapus tindakan - sekarang support duplikat dengan remove by index
@@ -661,39 +804,53 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
   // Tambah ICD9 - nyimpen Prosedur (bukan Kode_ICD9) karena backend nyari pake Prosedur
   const handleAddICD9 = (kode: string) => {
-    const icd = icd9List.find(i => (i as any).Kode_ICD9 === kode);
-    if (icd && (icd as any).Prosedur && !selectedICD9.includes((icd as any).Prosedur)) {
+    const icd = icd9List.find((i) => (i as any).Kode_ICD9 === kode);
+    if (
+      icd &&
+      (icd as any).Prosedur &&
+      !selectedICD9.includes((icd as any).Prosedur)
+    ) {
       setSelectedICD9([...selectedICD9, (icd as any).Prosedur]);
-      setIcd9Search('');
+      setIcd9Search("");
       setIcd9DropdownOpen(false);
     }
   };
 
   // Filter ICD9 berdasarkan search
-  const filteredICD9 = icd9List.filter((icd) =>
-    (icd as any).Prosedur?.toLowerCase().includes(icd9Search.toLowerCase()) ||
-    (icd as any).Kode_ICD9?.toLowerCase().includes(icd9Search.toLowerCase())
+  const filteredICD9 = icd9List.filter(
+    (icd) =>
+      (icd as any).Prosedur?.toLowerCase().includes(icd9Search.toLowerCase()) ||
+      (icd as any).Kode_ICD9?.toLowerCase().includes(icd9Search.toLowerCase()),
   );
 
   // Hapus ICD9 - sekarang pake Prosedur
   const handleRemoveICD9 = (prosedur: string) => {
-    setSelectedICD9(selectedICD9.filter(i => i !== prosedur));
+    setSelectedICD9(selectedICD9.filter((i) => i !== prosedur));
   };
 
   // Tambah ICD10 - nyimpen Diagnosa (bukan Kode_ICD10) karena backend nyari pake Diagnosa
   const handleAddICD10 = (kode: string) => {
-    const icd = icd10List.find(i => (i as any).Kode_ICD10 === kode);
-    if (icd && (icd as any).Diagnosa && !selectedICD10.includes((icd as any).Diagnosa)) {
+    const icd = icd10List.find((i) => (i as any).Kode_ICD10 === kode);
+    if (
+      icd &&
+      (icd as any).Diagnosa &&
+      !selectedICD10.includes((icd as any).Diagnosa)
+    ) {
       setSelectedICD10([...selectedICD10, (icd as any).Diagnosa]);
-      setIcd10Search('');
+      setIcd10Search("");
       setIcd10DropdownOpen(false);
     }
   };
 
   // Filter ICD10 berdasarkan search
-  const filteredICD10 = icd10List.filter((icd) =>
-    (icd as any).Diagnosa?.toLowerCase().includes(icd10Search.toLowerCase()) ||
-    (icd as any).Kode_ICD10?.toLowerCase().includes(icd10Search.toLowerCase())
+  const filteredICD10 = icd10List.filter(
+    (icd) =>
+      (icd as any).Diagnosa?.toLowerCase().includes(
+        icd10Search.toLowerCase(),
+      ) ||
+      (icd as any).Kode_ICD10?.toLowerCase().includes(
+        icd10Search.toLowerCase(),
+      ),
   );
 
   // Handle pilih Ruangan
@@ -704,9 +861,14 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   };
 
   // Filter Ruangan berdasarkan search
-  const filteredRuangan = ruanganList.filter((r) =>
-    (r as any).Nama_Ruangan?.toLowerCase().includes(ruanganSearch.toLowerCase()) ||
-    (r as any).ID_Ruangan?.toString().toLowerCase().includes(ruanganSearch.toLowerCase())
+  const filteredRuangan = ruanganList.filter(
+    (r) =>
+      (r as any).Nama_Ruangan?.toLowerCase().includes(
+        ruanganSearch.toLowerCase(),
+      ) ||
+      (r as any).ID_Ruangan?.toString()
+        .toLowerCase()
+        .includes(ruanganSearch.toLowerCase()),
   );
 
   // Handle pilih DPJP
@@ -717,24 +879,33 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
   };
 
   // Filter DPJP berdasarkan search
-  const filteredDPJP = dokterList.filter((d) =>
-    (d as any).Nama_Dokter?.toLowerCase().includes(dpjpSearch.toLowerCase()) ||
-    (d as any).ID_Dokter?.toString().toLowerCase().includes(dpjpSearch.toLowerCase())
+  const filteredDPJP = dokterList.filter(
+    (d) =>
+      (d as any).Nama_Dokter?.toLowerCase().includes(
+        dpjpSearch.toLowerCase(),
+      ) ||
+      (d as any).ID_Dokter?.toString()
+        .toLowerCase()
+        .includes(dpjpSearch.toLowerCase()),
   );
 
   // Hapus duplicates berdasarkan Nama_Dokter (keep first occurrence)
-  const uniqueDPJP = filteredDPJP.filter((d, index, self) =>
-    index === self.findIndex((t) => (t as any).Nama_Dokter === (d as any).Nama_Dokter)
+  const uniqueDPJP = filteredDPJP.filter(
+    (d, index, self) =>
+      index ===
+      self.findIndex((t) => (t as any).Nama_Dokter === (d as any).Nama_Dokter),
   );
 
   // Hapus duplicates dari full dokterList juga
-  const uniqueDokterList = dokterList.filter((d, index, self) =>
-    index === self.findIndex((t) => (t as any).Nama_Dokter === (d as any).Nama_Dokter)
+  const uniqueDokterList = dokterList.filter(
+    (d, index, self) =>
+      index ===
+      self.findIndex((t) => (t as any).Nama_Dokter === (d as any).Nama_Dokter),
   );
 
   // Hapus ICD10 - sekarang pake Diagnosa
   const handleRemoveICD10 = (diagnosa: string) => {
-    setSelectedICD10(selectedICD10.filter(i => i !== diagnosa));
+    setSelectedICD10(selectedICD10.filter((i) => i !== diagnosa));
   };
 
   // Submit billing - CUMA INI YANG SAVE KE DATABASE
@@ -744,20 +915,28 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     e.stopPropagation();
 
     // Debug: Log buat pastiin cuma dipanggil pas tombol Save diklik
-    console.log('handleSubmit called - User clicked Save button');
+    console.log("handleSubmit called - User clicked Save button");
 
     // Hindari multiple submissions
     if (isSubmitting || loading) {
-      console.log('Submit blocked - already submitting');
+      console.log("Submit blocked - already submitting");
       return;
     }
 
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     // Validation - Pastiin semua field wajib terisi
-    if (!namaPasien || !usia || !ruangan || !kelas || !dpjp || !tanggalMasuk || !gender) {
-      setError('Mohon lengkapi semua field yang wajib diisi');
+    if (
+      !namaPasien ||
+      !usia ||
+      !ruangan ||
+      !kelas ||
+      !dpjp ||
+      !tanggalMasuk ||
+      !gender
+    ) {
+      setError("Mohon lengkapi semua field yang wajib diisi");
       return;
     }
 
@@ -765,7 +944,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     const isPasienBaru = !billingHistory; // Kalo billingHistory null, pasien baru
 
     if (selectedTindakan.length === 0) {
-      setError('Mohon pilih minimal satu tindakan');
+      setError("Mohon pilih minimal satu tindakan");
       return;
     }
 
@@ -773,7 +952,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
     // Pasien baru: ICD10 WAJIB
     // Pasien existing: ICD10 OPTIONAL
     if (isPasienBaru && selectedICD10.length === 0) {
-      setError('Mohon pilih minimal satu ICD10 (wajib untuk pasien baru)');
+      setError("Mohon pilih minimal satu ICD10 (wajib untuk pasien baru)");
       return;
     }
 
@@ -782,9 +961,11 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       setLoading(true);
 
       // Ambil nama dokter dari ID
-      const selectedDokter = dokterList.find(d => (d as any).ID_Dokter.toString() === dpjp);
+      const selectedDokter = dokterList.find(
+        (d) => (d as any).ID_Dokter.toString() === dpjp,
+      );
       if (!selectedDokter) {
-        setError('Dokter tidak ditemukan');
+        setError("Dokter tidak ditemukan");
         setLoading(false);
         return;
       }
@@ -792,47 +973,60 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       // JANGAN merge di frontend - kirim cuma selectedTindakan (tindakan BARU)
       // Backend bakal handle merge sama DB tindakan
       let tindakanToSend = selectedTindakan;
-      
-      console.log('📊 Sending tindakan - isPasienBaru:', isPasienBaru, 'Selected:', selectedTindakan);
+
+      console.log(
+        "📊 Sending tindakan - isPasienBaru:",
+        isPasienBaru,
+        "Selected:",
+        selectedTindakan,
+      );
 
       // Hitung tarif - CUMA kirim harga tindakan BARU aja ke backend, jangan total!
       // Backend sudah punya tarif lama, kita cuma kirim harga yang baru ditambahkan
       let calculatedTarif = 0;
-      
+
       // Hitung HANYA harga dari selectedTindakan (yang baru)
       calculatedTarif = selectedTindakan.reduce((sum, deskripsi) => {
-        const tarif = tarifRSList.find(t => (t as any).Deskripsi === deskripsi);
+        const tarif = tarifRSList.find(
+          (t) => (t as any).Deskripsi === deskripsi,
+        );
         const harga = (tarif as any)?.Harga || 0;
         return sum + harga;
       }, 0);
-      
-      console.log('💰 Kirim ke backend - selectedTindakan:', selectedTindakan, 'Tarif baru saja:', calculatedTarif);
+
+      console.log(
+        "💰 Kirim ke backend - selectedTindakan:",
+        selectedTindakan,
+        "Tarif baru saja:",
+        calculatedTarif,
+      );
 
       // Helper function untuk convert YYYY-MM-DD (dari date input) atau DD/MM/YYYY ke YYYY-MM-DD
       const convertDateFormat = (dateStr: string): string => {
-        if (!dateStr) return '';
+        if (!dateStr) return "";
         // Cek kalo format udah YYYY-MM-DD (dari HTML5 date input)
-        if (dateStr.includes('-') && dateStr.length === 10) {
-          const parts = dateStr.split('-');
+        if (dateStr.includes("-") && dateStr.length === 10) {
+          const parts = dateStr.split("-");
           if (parts.length === 3 && parts[0].length === 4) {
             // Already in YYYY-MM-DD format
             return dateStr;
           }
         }
         // If format is DD/MM/YYYY, convert to YYYY-MM-DD
-        const parts = dateStr.split('/');
+        const parts = dateStr.split("/");
         if (parts.length === 3) {
           const [day, month, year] = parts;
           return `${year}-${month}-${day}`;
         }
         // If cannot parse, return empty
-        return '';
+        return "";
       };
 
-        
+      const totalKlaimBPJS =
+        billingHistory && billingHistory.total_klaim
+          ? billingHistory.total_klaim
+          : 0;
 
-      const totalKlaimBPJS = (billingHistory && billingHistory.total_klaim) ? billingHistory.total_klaim : 0;
-      
       const billingData: BillingRequest = {
         nama_pasien: namaPasien,
         id_pasien: idPasien ? parseInt(idPasien) : undefined,
@@ -845,7 +1039,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         tindakan_rs: tindakanToSend, // Use merged array for existing patients
         billing_sign: liveBillingSign,
         tanggal_masuk: convertDateFormat(tanggalMasuk),
-        tanggal_keluar: convertDateFormat(tanggalKeluar) || '',
+        tanggal_keluar: convertDateFormat(tanggalKeluar) || "",
         icd9: selectedICD9,
         icd10: selectedICD10,
         cara_bayar: caraBayar,
@@ -853,7 +1047,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         total_klaim_bpjs: totalKlaimBPJS, // ← Added: Send baseline BPJS claim to backend
       };
 
-      console.log('📤 Sending billing data to backend:', {
+      console.log("📤 Sending billing data to backend:", {
         ...billingData,
         billing_sign: billingData.billing_sign,
         total_tarif_rs: billingData.total_tarif_rs,
@@ -877,7 +1071,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       }
 
       if (response.data) {
-        setSuccess('Billing berhasil dibuat!');
+        setSuccess("Billing berhasil dibuat!");
 
         // Simpan data ke localStorage untuk INACBG admin page
         const billingResponse = (response.data as any).data?.billing || {};
@@ -897,34 +1091,40 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
           tanggal_masuk: tanggalMasuk,
           tanggal_keluar: tanggalKeluar || null,
         };
-        localStorage.setItem('currentBillingData', JSON.stringify(billingDataForINACBG));
-        console.log('💾 Billing data saved to localStorage:', billingDataForINACBG);
+        localStorage.setItem(
+          "currentBillingData",
+          JSON.stringify(billingDataForINACBG),
+        );
+        console.log(
+          "💾 Billing data saved to localStorage:",
+          billingDataForINACBG,
+        );
 
         // Reset form setelah berhasil save
         setTimeout(() => {
-          setNamaPasien('');
-          setIdPasien('');
-          setUsia('');
-          setIdPasien('');
-          setUsia('');
-          setGender('Laki-Laki');
-          setRuangan('');
-          setRuanganSearch('');
-          setKelas('');
-          setTanggalMasuk('');
-          setTanggalKeluar('');
-          setDpjp('');
-          setDpjpSearch('');
+          setNamaPasien("");
+          setIdPasien("");
+          setUsia("");
+          setIdPasien("");
+          setUsia("");
+          setGender("Laki-Laki");
+          setRuangan("");
+          setRuanganSearch("");
+          setKelas("");
+          setTanggalMasuk("");
+          setTanggalKeluar("");
+          setDpjp("");
+          setDpjpSearch("");
           setSelectedTindakan([]);
           setSelectedICD9([]);
           setSelectedICD10([]);
           setTotalTarifRS(0);
           setSearchResults([]);
-          setSuccess('');
+          setSuccess("");
         }, 2000);
       }
     } catch (err) {
-      setError('Gagal membuat billing. Pastikan backend server berjalan.');
+      setError("Gagal membuat billing. Pastikan backend server berjalan.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -937,12 +1137,19 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       {/* Header dengan Tanggal */}
       <div className="mb-2 sm:mb-3">
         <div className="text-xs sm:text-sm text-[#2591D0]">
-          {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          {new Date().toLocaleDateString("id-ID", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
         </div>
       </div>
 
       {/* Title */}
-      <div className="text-lg sm:text-xl text-[#2591D0] mb-3 sm:mb-4 font-bold">Data Pasien</div>
+      <div className="text-lg sm:text-xl text-[#2591D0] mb-3 sm:mb-4 font-bold">
+        Data Pasien
+      </div>
 
       {/* Error/Success Messages */}
       {error && (
@@ -961,7 +1168,10 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
         className="w-full"
         onKeyDown={(e) => {
           // Prevent form submission on Enter key unless it's the submit button
-          if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'BUTTON') {
+          if (
+            e.key === "Enter" &&
+            (e.target as HTMLElement).tagName !== "BUTTON"
+          ) {
             e.preventDefault();
           }
         }}
@@ -980,7 +1190,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                 onChange={(e) => onNameChange(e.target.value)}
                 onKeyDown={(e) => {
                   // Prevent form submission on Enter in input field
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                   }
                 }}
@@ -1008,7 +1218,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0]"
                     >
                       <div className="font-medium">{p.Nama_Pasien}</div>
-                      <div className="text-xs text-gray-600">{p.Usia} tahun — {p.Ruangan}</div>
+                      <div className="text-xs text-gray-600">
+                        {p.Usia} tahun — {p.Ruangan}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1017,37 +1229,85 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* Live Billing Sign Card (mirip INACBG) */}
             {totalTarifRS > 0 && totalKlaimBPJSLive > 0 && (
-              <div className="ml-0 sm:ml-4 mt-4 mb-4 p-3 sm:p-4 rounded-lg border-2" style={{
-                borderColor: liveBillingSign === 'Merah' ? '#dc2626' : liveBillingSign === 'Kuning' ? '#f59e0b' : '#10b981',
-                backgroundColor: liveBillingSign === 'Merah' ? '#fee2e2' : liveBillingSign === 'Kuning' ? '#fef3c7' : '#ecfdf5'
-              }}>
+              <div
+                className="ml-0 sm:ml-4 mt-4 mb-4 p-3 sm:p-4 rounded-lg border-2"
+                style={{
+                  borderColor:
+                    liveBillingSign === "Merah"
+                      ? "#dc2626"
+                      : liveBillingSign === "Kuning"
+                        ? "#f59e0b"
+                        : "#10b981",
+                  backgroundColor:
+                    liveBillingSign === "Merah"
+                      ? "#fee2e2"
+                      : liveBillingSign === "Kuning"
+                        ? "#fef3c7"
+                        : "#ecfdf5",
+                }}
+              >
                 <div className="flex items-start gap-2 sm:gap-3">
                   <div className="flex-shrink-0 mt-0.5">
-                    <div className="flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full" style={{
-                      backgroundColor: liveBillingSign === 'Merah' ? '#dc2626' : liveBillingSign === 'Kuning' ? '#f59e0b' : '#10b981'
-                    }}>
-                      <span className="text-white font-bold text-xs sm:text-sm">!</span>
+                    <div
+                      className="flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                      style={{
+                        backgroundColor:
+                          liveBillingSign === "Merah"
+                            ? "#dc2626"
+                            : liveBillingSign === "Kuning"
+                              ? "#f59e0b"
+                              : "#10b981",
+                      }}
+                    >
+                      <span className="text-white font-bold text-xs sm:text-sm">
+                        !
+                      </span>
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm sm:text-base" style={{
-                      color: liveBillingSign === 'Merah' ? '#7f1d1d' : liveBillingSign === 'Kuning' ? '#92400e' : '#065f46'
-                    }}>
-                      {liveBillingSign === 'Merah' ? '⚠️ Perhatian: Tarif RS Melebihi INACBG' :
-                       liveBillingSign === 'Kuning' ? '⚠️ Perhatian: Tarif RS Mendekati INACBG' :
-                       '✅ Tarif RS Dalam Batas Aman'}
+                    <p
+                      className="font-semibold text-sm sm:text-base"
+                      style={{
+                        color:
+                          liveBillingSign === "Merah"
+                            ? "#7f1d1d"
+                            : liveBillingSign === "Kuning"
+                              ? "#92400e"
+                              : "#065f46",
+                      }}
+                    >
+                      {liveBillingSign === "Merah"
+                        ? "⚠️ Perhatian: Tarif RS Melebihi INACBG"
+                        : liveBillingSign === "Kuning"
+                          ? "⚠️ Perhatian: Tarif RS Mendekati INACBG"
+                          : "✅ Tarif RS Dalam Batas Aman"}
                     </p>
-                    <p className="text-xs sm:text-sm mt-1" style={{
-                      color: liveBillingSign === 'Merah' ? '#991b1b' : liveBillingSign === 'Kuning' ? '#b45309' : '#047857'
-                    }}>
-                      Tarif RS: Rp {totalTarifRS.toLocaleString('id-ID')} | 
-                      INACBG: Rp {totalKlaimBPJSLive.toLocaleString('id-ID')}
+                    <p
+                      className="text-xs sm:text-sm mt-1"
+                      style={{
+                        color:
+                          liveBillingSign === "Merah"
+                            ? "#991b1b"
+                            : liveBillingSign === "Kuning"
+                              ? "#b45309"
+                              : "#047857",
+                      }}
+                    >
+                      Tarif RS: Rp {totalTarifRS.toLocaleString("id-ID")} |
+                      INACBG: Rp {totalKlaimBPJSLive.toLocaleString("id-ID")}
                     </p>
-                    {liveBillingSign === 'Merah' && (
-                      <p className="text-xs sm:text-sm mt-1" style={{
-                        color: liveBillingSign === 'Merah' ? '#991b1b' : '#047857'
-                      }}>
-                        Selisih: Rp {(totalTarifRS - totalKlaimBPJSLive).toLocaleString('id-ID')}
+                    {liveBillingSign === "Merah" && (
+                      <p
+                        className="text-xs sm:text-sm mt-1"
+                        style={{
+                          color:
+                            liveBillingSign === "Merah" ? "#991b1b" : "#047857",
+                        }}
+                      >
+                        Selisih: Rp{" "}
+                        {(totalTarifRS - totalKlaimBPJSLive).toLocaleString(
+                          "id-ID",
+                        )}
                       </p>
                     )}
                   </div>
@@ -1065,7 +1325,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
           <div className="ml-0 sm:ml-4 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-x-6 sm:gap-y-6 w-full max-w-full">
             {/* Usia */}
             <div>
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Usia</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Usia
+              </label>
               <input
                 type="number"
                 placeholder="Masukkan usia"
@@ -1073,7 +1335,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                 onChange={(e) => setUsia(e.target.value)}
                 onKeyDown={(e) => {
                   // Prevent form submission on Enter
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     e.preventDefault();
                   }
                 }}
@@ -1084,7 +1346,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* Jenis Kelamin */}
             <div>
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Jenis Kelamin</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Jenis Kelamin
+              </label>
               <div className="flex items-center space-x-3 sm:space-x-4 h-9 sm:h-10">
                 <div className="flex items-center">
                   <input
@@ -1092,11 +1356,16 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                     type="radio"
                     value="Laki-Laki"
                     name="jenis_kelamin"
-                    checked={gender === 'Laki-Laki'}
+                    checked={gender === "Laki-Laki"}
                     onChange={(e) => setGender(e.target.value)}
                     className="w-5 h-5 text-care-blue bg-gray-100 border-gray-300 accent-[#2591D0]"
                   />
-                  <label htmlFor="radio-pria" className="ml-1.5 text-xs sm:text-sm font-medium text-[#2591D0]">Pria</label>
+                  <label
+                    htmlFor="radio-pria"
+                    className="ml-1.5 text-xs sm:text-sm font-medium text-[#2591D0]"
+                  >
+                    Pria
+                  </label>
                 </div>
 
                 <div className="flex items-center">
@@ -1104,11 +1373,16 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                     id="radio-wanita"
                     type="radio"
                     value="Perempuan"
-                    checked={gender === 'Perempuan'}
+                    checked={gender === "Perempuan"}
                     onChange={(e) => setGender(e.target.value)}
                     className="w-5 h-5 text-care-blue bg-gray-100 border-gray-300 accent-[#2591D0]"
                   />
-                  <label htmlFor="radio-wanita" className="ml-1.5 text-xs sm:text-sm font-medium text-[#2591D0]">Wanita</label>
+                  <label
+                    htmlFor="radio-wanita"
+                    className="ml-1.5 text-xs sm:text-sm font-medium text-[#2591D0]"
+                  >
+                    Wanita
+                  </label>
                 </div>
               </div>
             </div>
@@ -1118,7 +1392,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
           <div className="ml-0 sm:ml-4 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-x-6 md:gap-x-12 sm:gap-y-6 w-full max-w-full">
             {/* Ruang */}
             <div className="relative">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Ruang</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Ruang
+              </label>
               <div className="relative">
                 <input
                   ref={ruanganInputRef}
@@ -1136,8 +1412,11 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                     setRuanganJustClosed(false);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && filteredRuangan.length > 0) {
-                      handleSelectRuangan((filteredRuangan[0] as any).ID_Ruangan.toString(), (filteredRuangan[0] as any).Nama_Ruangan);
+                    if (e.key === "Enter" && filteredRuangan.length > 0) {
+                      handleSelectRuangan(
+                        (filteredRuangan[0] as any).ID_Ruangan.toString(),
+                        (filteredRuangan[0] as any).Nama_Ruangan,
+                      );
                       e.preventDefault();
                     }
                   }}
@@ -1163,15 +1442,24 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                     className="absolute z-50 w-full mt-1 bg-white border border-blue-200 rounded-lg shadow-lg max-h-[min(24rem,calc(100vh-12rem))] overflow-y-auto"
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-                    {(ruanganSearch ? filteredRuangan : ruanganList).map((r) => (
-                      <div
-                        key={(r as any).ID_Ruangan}
-                        onClick={() => handleSelectRuangan((r as any).ID_Ruangan.toString(), (r as any).Nama_Ruangan)}
-                        className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0]"
-                      >
-                        <div className="font-medium">{(r as any).Nama_Ruangan}</div>
-                      </div>
-                    ))}
+                    {(ruanganSearch ? filteredRuangan : ruanganList).map(
+                      (r) => (
+                        <div
+                          key={(r as any).ID_Ruangan}
+                          onClick={() =>
+                            handleSelectRuangan(
+                              (r as any).ID_Ruangan.toString(),
+                              (r as any).Nama_Ruangan,
+                            )
+                          }
+                          className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0]"
+                        >
+                          <div className="font-medium">
+                            {(r as any).Nama_Ruangan}
+                          </div>
+                        </div>
+                      ),
+                    )}
                     {ruanganSearch && filteredRuangan.length === 0 && (
                       <div className="px-4 py-2 text-sm text-gray-500 text-center">
                         Tidak ada hasil ditemukan
@@ -1184,7 +1472,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* Kelas */}
             <div>
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Kelas</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Kelas
+              </label>
               <div className="relative">
                 <select
                   value={kelas}
@@ -1192,10 +1482,18 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                   className="w-full border text-sm border-blue-200 rounded-full py-2 sm:py-3 pl-3 sm:pl-4 pr-8 sm:pr-10 text-[#2591D0] placeholder-blue-400 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-0"
                   required
                 >
-                  <option value="" disabled>Pilih kelas</option>
-                  <option value="1" className="text-gray-700">Kelas 1</option>
-                  <option value="2" className="text-gray-700">Kelas 2</option>
-                  <option value="3" className="text-gray-700">Kelas 3</option>
+                  <option value="" disabled>
+                    Pilih kelas
+                  </option>
+                  <option value="1" className="text-gray-700">
+                    Kelas 1
+                  </option>
+                  <option value="2" className="text-gray-700">
+                    Kelas 2
+                  </option>
+                  <option value="3" className="text-gray-700">
+                    Kelas 3
+                  </option>
                 </select>
               </div>
             </div>
@@ -1232,7 +1530,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* DPJP */}
             <div className="relative">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">DPJP</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                DPJP
+              </label>
               <div className="relative">
                 <input
                   ref={dpjpInputRef}
@@ -1250,8 +1550,11 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                     setDpjpJustClosed(false);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && uniqueDPJP.length > 0) {
-                      handleSelectDPJP((uniqueDPJP[0] as any).ID_Dokter.toString(), (uniqueDPJP[0] as any).Nama_Dokter);
+                    if (e.key === "Enter" && uniqueDPJP.length > 0) {
+                      handleSelectDPJP(
+                        (uniqueDPJP[0] as any).ID_Dokter.toString(),
+                        (uniqueDPJP[0] as any).Nama_Dokter,
+                      );
                       e.preventDefault();
                     }
                   }}
@@ -1280,10 +1583,17 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                     {(dpjpSearch ? uniqueDPJP : uniqueDokterList).map((d) => (
                       <div
                         key={(d as any).ID_Dokter}
-                        onClick={() => handleSelectDPJP((d as any).ID_Dokter.toString(), (d as any).Nama_Dokter)}
+                        onClick={() =>
+                          handleSelectDPJP(
+                            (d as any).ID_Dokter.toString(),
+                            (d as any).Nama_Dokter,
+                          )
+                        }
                         className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0]"
                       >
-                        <div className="font-medium">{(d as any).Nama_Dokter}</div>
+                        <div className="font-medium">
+                          {(d as any).Nama_Dokter}
+                        </div>
                       </div>
                     ))}
                     {dpjpSearch && uniqueDPJP.length === 0 && (
@@ -1301,7 +1611,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
           <div className="ml-0 sm:ml-4 mt-2 flex flex-col gap-4 sm:gap-6 w-full max-w-full">
             {/* Tindakan dan Pemeriksaan Penunjang */}
             <div className="w-full max-w-full relative">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Tindakan dan Pemeriksaan Penunjang</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Tindakan dan Pemeriksaan Penunjang
+              </label>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 w-full max-w-full relative">
                 <div className="flex-1 relative">
                   <input
@@ -1320,7 +1632,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       setTindakanJustClosed(false);
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && filteredTindakan.length > 0) {
+                      if (e.key === "Enter" && filteredTindakan.length > 0) {
                         handleAddTindakan((filteredTindakan[0] as any).KodeRS);
                         e.preventDefault();
                       }
@@ -1346,16 +1658,22 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       className="absolute z-50 w-full mt-1 bg-white border border-blue-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"
                       onMouseDown={(e) => e.stopPropagation()}
                     >
-                      {(tindakanSearch ? filteredTindakan : tarifRSList).map((t) => (
-                        <div
-                          key={(t as any).KodeRS}
-                          onClick={() => handleAddTindakan((t as any).KodeRS)}
-                          className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0] border-b border-blue-100 last:border-b-0"
-                        >
-                          <div className="font-medium">{(t as any).Deskripsi}</div>
-                          <div className="text-xs text-gray-600">{(t as any).KodeRS}</div>
-                        </div>
-                      ))}
+                      {(tindakanSearch ? filteredTindakan : tarifRSList).map(
+                        (t) => (
+                          <div
+                            key={(t as any).KodeRS}
+                            onClick={() => handleAddTindakan((t as any).KodeRS)}
+                            className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0] border-b border-blue-100 last:border-b-0"
+                          >
+                            <div className="font-medium">
+                              {(t as any).Deskripsi}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {(t as any).KodeRS}
+                            </div>
+                          </div>
+                        ),
+                      )}
                       {tindakanSearch && filteredTindakan.length === 0 && (
                         <div className="px-4 py-2 text-sm text-gray-500 text-center">
                           Tidak ada hasil ditemukan
@@ -1380,12 +1698,19 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
               {selectedTindakan.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedTindakan.map((t, index) => {
-                    const tarif = tarifRSList.find(tar => (tar as any).Deskripsi === t);
+                    const tarif = tarifRSList.find(
+                      (tar) => (tar as any).Deskripsi === t,
+                    );
                     const harga = (tarif as any)?.Harga || 0;
                     return (
-                      <div key={`${index}_${t}`} className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm">
+                      <div
+                        key={`${index}_${t}`}
+                        className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm"
+                      >
                         <span className="mr-2">{t}</span>
-                        <span className="text-xs text-gray-600 mr-2">Rp {harga.toLocaleString('id-ID')}</span>
+                        <span className="text-xs text-gray-600 mr-2">
+                          Rp {harga.toLocaleString("id-ID")}
+                        </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveTindakan(index)}
@@ -1403,10 +1728,12 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* Total Tarif RS */}
             <div className="w-full max-w-full">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Total Tarif RS</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Total Tarif RS
+              </label>
               <input
                 type="text"
-                value={totalTarifRS.toLocaleString('id-ID')}
+                value={totalTarifRS.toLocaleString("id-ID")}
                 readOnly
                 className="w-full max-w-full border text-sm border-blue-200 rounded-full py-2 sm:py-3 pl-3 sm:pl-4 pr-8 sm:pr-10 text-[#2591D0] bg-blue-50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-0"
               />
@@ -1416,153 +1743,236 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
           {/* Riwayat Billing Aktif (Tindakan & ICD Sebelumnya) */}
           <div className="ml-0 sm:ml-4 mt-4 sm:mt-6 mb-4 sm:mb-6 w-full max-w-full bg-white py-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-              <label className="block text-sm sm:text-md text-[#2591D0] font-bold">Riwayat Tindakan & ICD (Billing Aktif)</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] font-bold">
+                Riwayat Tindakan & ICD (Billing Aktif)
+              </label>
             </div>
-            <div className="text-xs sm:text-sm text-blue-600 mb-3">{billingHistoryInfo}</div>
-            {billingHistory && (billingHistory.tindakan_rs.length > 0 || billingHistory.icd9.length > 0 || billingHistory.icd10.length > 0 || (billingHistory.inacbg && billingHistory.inacbg.length > 0)) && (
-              <>
-                {/* Desktop Table View */}
-                <div className="hidden md:block overflow-x-auto border border-blue-200 rounded-lg">
-                  <table className="w-full text-sm md:text-base border-collapse">
-                    <thead>
-                      <tr className="bg-blue-100 border-b border-blue-200">
-                        <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">Tanggal Masuk</th>
-                        <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">Tanggal Keluar</th>
-                        <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">Tindakan RS</th>
-                        <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">ICD 9</th>
-                        <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">ICD 10</th>
-                        <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">INACBG</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Math.max(billingHistory.tindakan_rs.length, billingHistory.icd9.length, billingHistory.icd10.length, billingHistory.inacbg?.length || 0) > 0 ? (
-                        Array.from({
-                          length: Math.max(billingHistory.tindakan_rs.length, billingHistory.icd9.length, billingHistory.icd10.length, billingHistory.inacbg?.length || 0)
-                        }).map((_, idx) => (
-                          <tr key={`history-row-${idx}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-blue-50'}>
-                            <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
-                              {idx === 0 ? (billingHistory.tanggal_masuk
-                                ? new Date(billingHistory.tanggal_masuk).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-                                : '-') : '-'}
-                            </td>
-                            <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
-                              {idx === 0 ? (billingHistory.tanggal_keluar
-                                ? new Date(billingHistory.tanggal_keluar).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-                                : '-') : '-'}
-                            </td>
-                            <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
-                              {billingHistory.tindakan_rs[idx] || '-'}
-                            </td>
-                            <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
-                              {billingHistory.icd9[idx] || '-'}
-                            </td>
-                            <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
-                              {billingHistory.icd10[idx] || '-'}
-                            </td>
-                            <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
-                              {billingHistory.inacbg?.[idx] || '-'}
+            <div className="text-xs sm:text-sm text-blue-600 mb-3">
+              {billingHistoryInfo}
+            </div>
+            {billingHistory &&
+              (billingHistory.tindakan_rs.length > 0 ||
+                billingHistory.icd9.length > 0 ||
+                billingHistory.icd10.length > 0 ||
+                (billingHistory.inacbg &&
+                  billingHistory.inacbg.length > 0)) && (
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto border border-blue-200 rounded-lg">
+                    <table className="w-full text-sm md:text-base border-collapse">
+                      <thead>
+                        <tr className="bg-blue-100 border-b border-blue-200">
+                          <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">
+                            Tanggal Masuk
+                          </th>
+                          <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">
+                            Tanggal Keluar
+                          </th>
+                          <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">
+                            Tindakan RS
+                          </th>
+                          <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">
+                            ICD 9
+                          </th>
+                          <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">
+                            ICD 10
+                          </th>
+                          <th className="border border-blue-200 p-3 md:p-4 text-left font-semibold text-[#2591D0]">
+                            INACBG
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Math.max(
+                          billingHistory.tindakan_rs.length,
+                          billingHistory.icd9.length,
+                          billingHistory.icd10.length,
+                          billingHistory.inacbg?.length || 0,
+                        ) > 0 ? (
+                          Array.from({
+                            length: Math.max(
+                              billingHistory.tindakan_rs.length,
+                              billingHistory.icd9.length,
+                              billingHistory.icd10.length,
+                              billingHistory.inacbg?.length || 0,
+                            ),
+                          }).map((_, idx) => (
+                            <tr
+                              key={`history-row-${idx}`}
+                              className={
+                                idx % 2 === 0 ? "bg-white" : "bg-blue-50"
+                              }
+                            >
+                              <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
+                                {idx === 0
+                                  ? billingHistory.tanggal_masuk
+                                    ? new Date(
+                                        billingHistory.tanggal_masuk,
+                                      ).toLocaleDateString("id-ID", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })
+                                    : "-"
+                                  : "-"}
+                              </td>
+                              <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
+                                {idx === 0
+                                  ? billingHistory.tanggal_keluar
+                                    ? new Date(
+                                        billingHistory.tanggal_keluar,
+                                      ).toLocaleDateString("id-ID", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })
+                                    : "-"
+                                  : "-"}
+                              </td>
+                              <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
+                                {billingHistory.tindakan_rs[idx] || "-"}
+                              </td>
+                              <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
+                                {billingHistory.icd9[idx] || "-"}
+                              </td>
+                              <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
+                                {billingHistory.icd10[idx] || "-"}
+                              </td>
+                              <td className="border border-blue-200 p-3 md:p-4 text-[#2591D0] break-words">
+                                {billingHistory.inacbg?.[idx] || "-"}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="border border-blue-200 p-4 text-center text-gray-500"
+                            >
+                              Tidak ada riwayat
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={6} className="border border-blue-200 p-4 text-center text-gray-500">
-                            Tidak ada riwayat
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
 
-                {/* Mobile/Tablet Card View */}
-                <div className="md:hidden">
-                  {/* Tanggal Section Mobile */}
-                  <div className="bg-blue-50 border border-blue-200 border-b-0 rounded-t-lg p-3 sm:p-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Tanggal Masuk</span>
-                        <p className="text-sm text-[#2591D0] font-medium mt-1">
-                          {billingHistory.tanggal_masuk
-                            ? new Date(billingHistory.tanggal_masuk).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-                            : '-'}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Tanggal Keluar</span>
-                        <p className="text-sm text-[#2591D0] font-medium mt-1">
-                          {billingHistory.tanggal_keluar
-                            ? new Date(billingHistory.tanggal_keluar).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-                            : '-'}
-                        </p>
+                  {/* Mobile/Tablet Card View */}
+                  <div className="md:hidden">
+                    {/* Tanggal Section Mobile */}
+                    <div className="bg-blue-50 border border-blue-200 border-b-0 rounded-t-lg p-3 sm:p-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Tanggal Masuk
+                          </span>
+                          <p className="text-sm text-[#2591D0] font-medium mt-1">
+                            {billingHistory.tanggal_masuk
+                              ? new Date(
+                                  billingHistory.tanggal_masuk,
+                                ).toLocaleDateString("id-ID", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })
+                              : "-"}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Tanggal Keluar
+                          </span>
+                          <p className="text-sm text-[#2591D0] font-medium mt-1">
+                            {billingHistory.tanggal_keluar
+                              ? new Date(
+                                  billingHistory.tanggal_keluar,
+                                ).toLocaleDateString("id-ID", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })
+                              : "-"}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Items Cards Mobile */}
-                  <div className="space-y-3 border border-blue-200 border-t-0 rounded-b-lg p-3 sm:p-4 bg-white">
-                    {Math.max(billingHistory.tindakan_rs.length, billingHistory.icd9.length, billingHistory.icd10.length, billingHistory.inacbg?.length || 0) > 0 ? (
-                      Array.from({
-                        length: Math.max(billingHistory.tindakan_rs.length, billingHistory.icd9.length, billingHistory.icd10.length, billingHistory.inacbg?.length || 0)
-                      }).map((_, idx) => (
-                        <div
-                          key={`history-card-${idx}`}
-                          className="bg-blue-50 border border-blue-200 rounded-lg p-3 hover:shadow-md transition-shadow"
-                        >
-                          <div className="space-y-2">
-                            <div className="flex flex-col space-y-1">
-                              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                                Tindakan RS
-                              </span>
-                              <span className="text-sm text-[#2591D0] font-medium break-words">
-                                {billingHistory.tindakan_rs[idx] || '-'}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
+                    {/* Items Cards Mobile */}
+                    <div className="space-y-3 border border-blue-200 border-t-0 rounded-b-lg p-3 sm:p-4 bg-white">
+                      {Math.max(
+                        billingHistory.tindakan_rs.length,
+                        billingHistory.icd9.length,
+                        billingHistory.icd10.length,
+                        billingHistory.inacbg?.length || 0,
+                      ) > 0 ? (
+                        Array.from({
+                          length: Math.max(
+                            billingHistory.tindakan_rs.length,
+                            billingHistory.icd9.length,
+                            billingHistory.icd10.length,
+                            billingHistory.inacbg?.length || 0,
+                          ),
+                        }).map((_, idx) => (
+                          <div
+                            key={`history-card-${idx}`}
+                            className="bg-blue-50 border border-blue-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+                          >
+                            <div className="space-y-2">
                               <div className="flex flex-col space-y-1">
                                 <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                                  ICD 9
+                                  Tindakan RS
                                 </span>
-                                <span className="text-sm text-[#2591D0] break-words">
-                                  {billingHistory.icd9[idx] || '-'}
+                                <span className="text-sm text-[#2591D0] font-medium break-words">
+                                  {billingHistory.tindakan_rs[idx] || "-"}
                                 </span>
                               </div>
-                              <div className="flex flex-col space-y-1">
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="flex flex-col space-y-1">
+                                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                    ICD 9
+                                  </span>
+                                  <span className="text-sm text-[#2591D0] break-words">
+                                    {billingHistory.icd9[idx] || "-"}
+                                  </span>
+                                </div>
+                                <div className="flex flex-col space-y-1">
+                                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                                    ICD 10
+                                  </span>
+                                  <span className="text-sm text-[#2591D0] break-words">
+                                    {billingHistory.icd10[idx] || "-"}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col space-y-1 pt-2 border-t border-blue-100">
                                 <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                                  ICD 10
+                                  INACBG
                                 </span>
                                 <span className="text-sm text-[#2591D0] break-words">
-                                  {billingHistory.icd10[idx] || '-'}
+                                  {billingHistory.inacbg?.[idx] || "-"}
                                 </span>
                               </div>
-                            </div>
-                            <div className="flex flex-col space-y-1 pt-2 border-t border-blue-100">
-                              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                                INACBG
-                              </span>
-                              <span className="text-sm text-[#2591D0] break-words">
-                                {billingHistory.inacbg?.[idx] || '-'}
-                              </span>
                             </div>
                           </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-gray-500 text-sm py-4">
+                          Tidak ada riwayat
                         </div>
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 text-sm py-4">
-                        Tidak ada riwayat
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
           </div>
 
           {/* Baris 2: ICD 10 dan ICD 9 - BERSEBELAHAN, TERPISAH KIRI KANAN */}
           <div className="ml-0 sm:ml-4 mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-x-6 md:gap-x-12 sm:gap-y-6 w-full max-w-full">
             {/* ICD 10 */}
             <div className="w-full relative">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">ICD 10</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                ICD 10
+              </label>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 relative">
                 <div className="flex-1 relative">
                   <input
@@ -1581,7 +1991,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       setIcd10JustClosed(false);
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && filteredICD10.length > 0) {
+                      if (e.key === "Enter" && filteredICD10.length > 0) {
                         handleAddICD10((filteredICD10[0] as any).Kode_ICD10);
                         e.preventDefault();
                       }
@@ -1610,11 +2020,17 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       {(icd10Search ? filteredICD10 : icd10List).map((icd) => (
                         <div
                           key={(icd as any).Kode_ICD10}
-                          onClick={() => handleAddICD10((icd as any).Kode_ICD10)}
+                          onClick={() =>
+                            handleAddICD10((icd as any).Kode_ICD10)
+                          }
                           className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0] border-b border-blue-100 last:border-b-0"
                         >
-                          <div className="font-medium">{(icd as any).Diagnosa}</div>
-                          <div className="text-xs text-gray-600">{(icd as any).Kode_ICD10}</div>
+                          <div className="font-medium">
+                            {(icd as any).Diagnosa}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {(icd as any).Kode_ICD10}
+                          </div>
                         </div>
                       ))}
                       {icd10Search && filteredICD10.length === 0 && (
@@ -1641,7 +2057,10 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
               {selectedICD10.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedICD10.map((p) => (
-                    <div key={p} className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm">
+                    <div
+                      key={p}
+                      className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm"
+                    >
                       <span className="mr-2">{p}</span>
                       <button
                         type="button"
@@ -1659,7 +2078,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* ICD 9 */}
             <div className="w-full relative">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">ICD 9</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                ICD 9
+              </label>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 relative">
                 <div className="flex-1 relative">
                   <input
@@ -1678,7 +2099,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       setIcd9JustClosed(false);
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && filteredICD9.length > 0) {
+                      if (e.key === "Enter" && filteredICD9.length > 0) {
                         handleAddICD9((filteredICD9[0] as any).Kode_ICD9);
                         e.preventDefault();
                       }
@@ -1710,8 +2131,12 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                           onClick={() => handleAddICD9((icd as any).Kode_ICD9)}
                           className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-[#2591D0] border-b border-blue-100 last:border-b-0"
                         >
-                          <div className="font-medium">{(icd as any).Prosedur}</div>
-                          <div className="text-xs text-gray-600">{(icd as any).Kode_ICD9}</div>
+                          <div className="font-medium">
+                            {(icd as any).Prosedur}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {(icd as any).Kode_ICD9}
+                          </div>
                         </div>
                       ))}
                       {icd9Search && filteredICD9.length === 0 && (
@@ -1738,7 +2163,10 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
               {selectedICD9.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selectedICD9.map((p) => (
-                    <div key={p} className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm">
+                    <div
+                      key={p}
+                      className="flex items-center bg-blue-50 border border-blue-200 text-[#2591D0] rounded-full px-3 py-1 text-sm"
+                    >
                       <span className="mr-2">{p}</span>
                       <button
                         type="button"
@@ -1756,7 +2184,9 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
 
             {/* Cara Bayar - di bawah ICD 9 */}
             <div className="w-full">
-              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">Cara Bayar</label>
+              <label className="block text-sm sm:text-md text-[#2591D0] mb-1 sm:mb-2 font-bold">
+                Cara Bayar
+              </label>
               <div className="relative">
                 <select
                   value={caraBayar}
@@ -1777,17 +2207,26 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                 disabled={loading}
                 className="flex-1 bg-[#2591D0] text-white px-6 sm:px-8 py-2 sm:py-3 rounded-full font-medium hover:bg-[#1e7ba8] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm sm:text-base"
               >
-                {loading ? 'Menyimpan...' : 'Save'}
+                {loading ? "Menyimpan..." : "Save"}
               </button>
               {billingHistory && billingHistory.billingId && (
                 <button
                   type="button"
                   onClick={() => {
-                    console.log('🎯 Edit button clicked');
-                    console.log('🎯 billingHistory state:', billingHistory);
-                    console.log('🎯 billingHistory.tindakan_rs:', billingHistory.tindakan_rs);
-                    console.log('🎯 billingHistory.tindakan_rs type:', typeof billingHistory.tindakan_rs);
-                    console.log('🎯 billingHistory.tindakan_rs length:', (billingHistory.tindakan_rs as any)?.length);
+                    console.log("🎯 Edit button clicked");
+                    console.log("🎯 billingHistory state:", billingHistory);
+                    console.log(
+                      "🎯 billingHistory.tindakan_rs:",
+                      billingHistory.tindakan_rs,
+                    );
+                    console.log(
+                      "🎯 billingHistory.tindakan_rs type:",
+                      typeof billingHistory.tindakan_rs,
+                    );
+                    console.log(
+                      "🎯 billingHistory.tindakan_rs length:",
+                      (billingHistory.tindakan_rs as any)?.length,
+                    );
                     const dataToPass = {
                       nama_pasien: namaPasien,
                       usia: parseInt(usia) || 0,
@@ -1799,7 +2238,7 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
                       icd10: billingHistory?.icd10 || [],
                       total_klaim_bpjs: billingHistory?.total_klaim || 0, // ← ADD THIS!
                     };
-                    console.log('🎯 Data to pass to modal:', dataToPass);
+                    console.log("🎯 Data to pass to modal:", dataToPass);
                     setEditModalData(dataToPass);
                     setShowEditModal(true);
                   }}
@@ -1817,31 +2256,35 @@ const BillingPasien = ({ onEditBilling }: BillingPasienProps) => {
       <EditPasienModal
         isOpen={showEditModal}
         billingId={billingHistory?.billingId || 0}
-        currentData={editModalData || {
-          nama_pasien: '',
-          usia: 0,
-          jenis_kelamin: '',
-          ruangan: '',
-          kelas: '',
-        }}
+        currentData={
+          editModalData || {
+            nama_pasien: "",
+            usia: 0,
+            jenis_kelamin: "",
+            ruangan: "",
+            kelas: "",
+          }
+        }
         onClose={() => {
           setShowEditModal(false);
           setEditModalData(null);
         }}
         onSuccess={() => {
-          console.log('🎉 EditPasienModal onSuccess called');
-          console.log('🎉 namaPasien value:', namaPasien);
+          console.log("🎉 EditPasienModal onSuccess called");
+          console.log("🎉 namaPasien value:", namaPasien);
           setShowEditModal(false);
           setEditModalData(null);
           // Reload billing history dan force re-render
           if (namaPasien) {
-            console.log('🎉 Reloading billing history for:', namaPasien);
+            console.log("🎉 Reloading billing history for:", namaPasien);
             setTimeout(() => {
-              console.log('🎉 setTimeout callback executing, calling loadBillingAktifHistory');
+              console.log(
+                "🎉 setTimeout callback executing, calling loadBillingAktifHistory",
+              );
               loadBillingAktifHistory(namaPasien);
             }, 500);
           } else {
-            console.warn('⚠️ namaPasien is empty, cannot reload');
+            console.warn("⚠️ namaPasien is empty, cannot reload");
           }
         }}
       />

@@ -441,6 +441,13 @@ const INACBG_Admin_Ruangan = ({
               const totalKlaim = data.total_klaim || 0;
               setTotalKlaimOriginal(totalKlaim);
               console.log(`💰 Set totalKlaimOriginal: ${totalKlaim}`);
+
+              // Seed liveBillingSign dari nilai tersimpan di DB, supaya display awal sesuai dengan BE
+              // Akan di-overwrite otomatis oleh useEffect saat user mengubah kode INACBG
+              if (data.billing_sign) {
+                setLiveBillingSign(data.billing_sign);
+                console.log(`🎨 Seeded liveBillingSign from DB: ${data.billing_sign}`);
+              }
               // DONT set totalKlaimBPJS here - biarkan useEffect calculate yang set nilai dengan benar
               // Jadi jangan: setTotalKlaimBPJS(totalKlaim);
 
@@ -777,15 +784,15 @@ const INACBG_Admin_Ruangan = ({
     const percentage = (totalTarifRS / totalKlaimBPJS) * 100;
     console.log(`📊 Percentage: ${percentage.toFixed(2)}% `);
 
-    if (percentage <= 25) {
-      console.log("✅ Returning: Hijau (<=25%)");
-      return "Hijau"; // Tarif RS <=25% dari Klaim BPJS Efektif = AMAN
-    } else if (percentage <= 50) {
-      console.log("✅ Returning: Kuning (26-50%)");
-      return "Kuning"; // 26%-50% = PERLU PERHATIAN
+    if (percentage <= 70) {
+      console.log("✅ Returning: Hijau (<=70%)");
+      return "Hijau"; // Tarif RS <=70% dari Klaim BPJS Efektif = AMAN
+    } else if (percentage > 70 && percentage <= 99) {
+      console.log("✅ Returning: Kuning (71-99%)");
+      return "Kuning"; // 71%-99% = PERLU PERHATIAN
     } else {
-      console.log("✅ Returning: Merah (>50%)");
-      return "Merah"; // >50% = WASPADA
+      console.log("✅ Returning: Merah (>99%)");
+      return "Merah"; // >99% = WASPADA
     }
   };
 
@@ -1581,9 +1588,9 @@ rounded - lg text - left transition - all
                   } `}
               >
                 {liveBillingSign === "" && "Belum bisa dihitung (isi data klaim & tarif dulu)"}
-                {liveBillingSign === "Hijau" && "Hijau - AMAN (<= 25%)"}
-                {liveBillingSign === "Kuning" && "Kuning - PERHATIAN (26% - 50%)"}
-                {liveBillingSign === "Merah" && "Merah - WASPADA (> 50%)"}
+                {liveBillingSign === "Hijau" && "Hijau - AMAN (<= 70%)"}
+                {liveBillingSign === "Kuning" && "Kuning - PERHATIAN (71% - 99%)"}
+                {liveBillingSign === "Merah" && "Merah - WASPADA (>= 100%)"}
               </div>
             </div>
 

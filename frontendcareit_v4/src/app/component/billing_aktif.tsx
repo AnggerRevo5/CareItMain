@@ -188,17 +188,18 @@ const RiwayatBillingPasien = ({ onLogout, userRole, onEdit, selectedRuangan }: R
   };
 
   // Hitung warning sign secara dinamis berdasarkan current tarif RS vs existing klaim
-  // This ensures warning updates even if INACBG hasn't been input yet
+  // Threshold harus konsisten dengan calculateBillingSign di billing-pasien & INACBG_Admin_Ruangan:
+  // <=70% = Hijau, 71-99% = Kuning, >=100% = Merah
   const calculateDynamicWarningSign = (totalTarifRS: number | undefined, totalKlaim: number | undefined): string => {
     if (!totalTarifRS || !totalKlaim || totalTarifRS <= 0 || totalKlaim <= 0) {
       return ""; // No data to calculate
     }
 
     const percentage = (totalTarifRS / totalKlaim) * 100;
-    
-    if (percentage <= 25) {
+
+    if (percentage <= 70) {
       return "Hijau"; // Safe
-    } else if (percentage <= 50) {
+    } else if (percentage <= 99) {
       return "Kuning"; // Warning
     } else {
       return "Merah"; // Alert
